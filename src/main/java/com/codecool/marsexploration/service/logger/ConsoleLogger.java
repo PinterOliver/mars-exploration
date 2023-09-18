@@ -19,8 +19,8 @@ public class ConsoleLogger implements Logger {
   }
   
   @Override
-  public void logInfo(@NotNull Collection<String> collection) {
-    String[] stringArray = collection.toArray(String[]::new);
+  public void logInfo(@NotNull Collection<String> messages) {
+    String[] stringArray = messages.toArray(String[]::new);
     logInfo(stringArray);
   }
   
@@ -29,8 +29,7 @@ public class ConsoleLogger implements Logger {
     logMessage("ERROR", message);
   }
   
-  @Override
-  public void displayMessage(String message) {
+  private void displayMessage(String message) {
     System.out.println(message);
   }
   
