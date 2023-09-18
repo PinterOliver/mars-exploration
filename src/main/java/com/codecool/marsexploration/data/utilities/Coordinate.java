@@ -15,4 +15,13 @@ public record Coordinate(int row, int column) {
     }
     return coordinate;
   }
+  
+  @Override
+  public String toString() {
+    return "[row: %d, column: %d]".formatted(row, column);
+  }
+  
+  public @NotNull Coordinate add(Coordinate coordinate) {
+    return Coordinate.add(this, coordinate);
+  }
 }
