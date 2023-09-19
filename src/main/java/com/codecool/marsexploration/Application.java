@@ -1,7 +1,7 @@
 package com.codecool.marsexploration;
 
-import com.codecool.marsexploration.service.filewriter.EasyFileWriter;
-import com.codecool.marsexploration.service.filewriter.EasyFileWriterImpl;
+import com.codecool.marsexploration.service.filewriter.MapFileWriter;
+import com.codecool.marsexploration.service.filewriter.MapFileWriterImpl;
 import com.codecool.marsexploration.service.input.Input;
 import com.codecool.marsexploration.service.input.InputImpl;
 import com.codecool.marsexploration.service.logger.ConsoleLogger;
@@ -16,7 +16,7 @@ public class Application {
   private static final Logger LOGGER = new ConsoleLogger();
   private static final Scanner SCANNER = new Scanner(System.in);
   private static final Input INPUT = new InputImpl(SCANNER, LOGGER);
-  private static final EasyFileWriter FILE_WRITER = new EasyFileWriterImpl(LOGGER);
+  private static final MapFileWriter FILE_WRITER = new MapFileWriterImpl(LOGGER);
   private static final Random RANDOM = new Random();
   private static final Pick PICK = new PickImpl(RANDOM);
   
