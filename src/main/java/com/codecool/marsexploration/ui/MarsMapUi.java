@@ -37,6 +37,29 @@ public class MarsMapUi {
   
   
   @NotNull
+  private MapConfiguration createMapConfiguration() {
+    int size = getInt(validationConfiguration.minimumMapSize(),
+                      validationConfiguration.maximumMapSize(),
+                      "size of the map");
+    
+    int mapSize = (int) Math.pow(size, 2);
+    remainingFreeTiles = (int) (mapSize * validationConfiguration.maxFilledTilesRatio());
+    logger.logInfo(String.format("The maximum number of all elements: %d", remainingFreeTiles));
+    int minimumRangeNumber = (int) (mapSize * validationConfiguration.minimumRangeTypeRatio());
+    int minimumResourceNumber = (int) (mapSize * validationConfiguration.minimumResourceTypeRatio());
+    
+    List<CellType> ranges = validationConfiguration.rangeTypes();
+    List<CellType> resources = validationConfiguration.resourceTypes();
+    
+    Collection<RangeConfiguration> rangeConfigurations =
+            getRangeConfigurations(ranges, minimumRangeNumber, resources, minimumResourceNumber);
+    Collection<ResourceConfiguration> resourceConfigurations =
+            getResourceConfigurations(resources, minimumResourceNumber);
+    
+    return new MapConfiguration(size, rangeConfigurations, resourceConfigurations);
+  }
+  
+  @NotNull
   private Collection<ResourceConfiguration> getResourceConfigurations(@NotNull List<CellType> resources,
           int minimumResourceNumber) {
     Collection<ResourceConfiguration> resourceConfigurations = new ArrayList<>();
