@@ -1,6 +1,5 @@
 package com.codecool.marsexploration.service.validation;
 
-import com.codecool.marsexploration.data.cell.CellType;
 import com.codecool.marsexploration.data.config.MapConfiguration;
 import com.codecool.marsexploration.data.config.MapValidationConfiguration;
 import com.codecool.marsexploration.data.config.RangeConfiguration;
@@ -8,7 +7,6 @@ import com.codecool.marsexploration.data.config.ResourceConfiguration;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public class MapConfigurationValidatorImpl implements MapConfigurationValidator {
@@ -38,18 +36,6 @@ public class MapConfigurationValidatorImpl implements MapConfigurationValidator 
   }
   
   private boolean areCellTypeListsValid(@NotNull MapConfiguration configuration, boolean isValid) {
-    Set<CellType> set1 = configuration.ranges().stream().map(RangeConfiguration::type).collect(Collectors.toSet());
-    Set<CellType> set2 = new HashSet<>(validationConfiguration.rangeTypes());
-    
-    System.out.println("set1: " + set1);
-    System.out.println("set1: " + set1.hashCode());
-    set1.forEach(e -> System.out.println(e + ": " + e.hashCode()));
-    
-    System.out.println("set2: " + set2.hashCode());
-    set2.forEach(e -> System.out.println(e + ": " + e.hashCode()));
-    
-    System.out.println(set1.equals(set2));
-    
     isValid = isValid && configuration.ranges()
                                       .stream()
                                       .map(RangeConfiguration::type)
