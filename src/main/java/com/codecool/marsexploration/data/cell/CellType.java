@@ -1,6 +1,7 @@
 package com.codecool.marsexploration.data.cell;
 
 public enum CellType {
+  VOID("x"),
   EMPTY(" "),
   MOUNTAIN("^"),
   PIT("#"),
