@@ -42,4 +42,19 @@ public class MarsMapUi {
   private void displayWelcomeMessage() {
     logger.logInfo("Welcome, Young Explorer!");
   }
+  
+  private int getInt(int minimumValue, int maximumValue, String message) {
+    logger.logInfo(String.format("Enter the %s!", message));
+    logger.logInfo(String.format("Validation: [minimum: %d, maximum: %d]", minimumValue, maximumValue));
+    return getIntInRange(minimumValue, maximumValue);
+  }
+  
+  private int getIntInRange(int minimumValue, int maximumValue) {
+    int inputNumber = input.get(Integer::parseInt);
+    while (inputNumber < minimumValue || inputNumber > maximumValue) {
+      logger.logError("Input out of range");
+      inputNumber = input.get(Integer::parseInt);
+    }
+    return inputNumber;
+  }
 }
