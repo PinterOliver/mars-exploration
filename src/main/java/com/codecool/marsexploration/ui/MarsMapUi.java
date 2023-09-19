@@ -35,6 +35,17 @@ public class MarsMapUi {
     this.filePathFormat = filePathFormat;
   }
   
+  public void run() {
+    displayWelcomeMessage();
+    if (checkWhetherValidationConfigurationIsValid()) {
+      MapConfiguration configuration = getMapConfiguration();
+      String filePath = getFilePath();
+      manager.createMap(configuration, filePath);
+    } else {
+      logger.logError("Validation configuration is invalid!");
+    }
+    displayFarewellMessage();
+  }
   
   private boolean checkWhetherValidationConfigurationIsValid() {
     return validationConfiguration.maxFilledTilesRatio() >
