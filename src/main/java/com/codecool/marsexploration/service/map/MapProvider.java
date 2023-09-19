@@ -1,8 +1,8 @@
 package com.codecool.marsexploration.service.map;
 
-import com.codecool.marsexploration.data.cell.Cell;
 import com.codecool.marsexploration.data.config.MapConfiguration;
+import com.codecool.marsexploration.data.map.MarsMap;
 
 public interface MapProvider {
-  Cell[][] generate(MapConfiguration configuration);
+  MarsMap generate(MapConfiguration configuration);
 }
