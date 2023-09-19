@@ -36,6 +36,12 @@ public class MarsMapUi {
   }
   
   
+  private boolean checkWhetherValidationConfigurationIsValid() {
+    return validationConfiguration.maxFilledTilesRatio() >
+           validationConfiguration.minimumRangeTypeRatio() * validationConfiguration.rangeTypes().size() +
+           validationConfiguration.minimumResourceTypeRatio() * validationConfiguration.resourceTypes().size();
+  }
+  
   @NotNull
   private MapConfiguration getMapConfiguration() {
     MapConfiguration configuration = createMapConfiguration();
@@ -45,6 +51,17 @@ public class MarsMapUi {
       configuration = createMapConfiguration();
     }
     return configuration;
+  }
+  
+  private String getFilePath() {
+    int level = 1;
+    String filePath = String.format(filePathFormat, level);
+    File file = new File(filePath);
+    while (file.exists()) {
+      filePath = String.format(filePathFormat, ++level);
+      file = new File(filePath);
+    }
+    return filePath;
   }
   
   @NotNull
