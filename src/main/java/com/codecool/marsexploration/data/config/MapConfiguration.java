@@ -1,8 +1,11 @@
 package com.codecool.marsexploration.data.config;
 
-public record MapConfiguration(int size, int numberOfMountains, int numberOfPits, int numberOfMinerals,
-                               int numberOfWaters, int numberOfMountainRanges, int numberOfPitCanyons) {
+import java.util.Collection;
+
+public record MapConfiguration(int size, Collection<RangeConfiguration> ranges,
+                               Collection<ResourceConfiguration> resources) {
   public int getNumberOfTiles() {
-    return numberOfMinerals + numberOfMountains + numberOfWaters + numberOfPits;
+    return ranges.stream().mapToInt(RangeConfiguration::numberOfElements).sum() +
+           resources.stream().mapToInt(ResourceConfiguration::numberOfElements).sum();
   }
 }
