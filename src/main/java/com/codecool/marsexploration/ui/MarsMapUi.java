@@ -35,6 +35,21 @@ public class MarsMapUi {
     this.filePathFormat = filePathFormat;
   }
   
+  
+  @NotNull
+  private Collection<ResourceConfiguration> getResourceConfigurations(@NotNull List<CellType> resources,
+          int minimumResourceNumber) {
+    Collection<ResourceConfiguration> resourceConfigurations = new ArrayList<>();
+    for (int i = 0; i < resources.size(); i++) {
+      int maximumResourceNumber = remainingFreeTiles - (resources.size() - i - 1) * minimumResourceNumber;
+      int numberOfElements = getInt(minimumResourceNumber,
+                                    maximumResourceNumber,
+                                    String.format("number of %ss", resources.get(i).getName()));
+      remainingFreeTiles -= numberOfElements;
+      resourceConfigurations.add(new ResourceConfiguration(resources.get(i), numberOfElements));
+    }
+    return resourceConfigurations;
+  }
   private void displayFarewellMessage() {
     logger.logInfo("Goodbye, Young Explorer!");
   }
