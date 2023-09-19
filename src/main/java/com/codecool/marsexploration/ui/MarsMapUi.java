@@ -34,4 +34,12 @@ public class MarsMapUi {
     this.validationConfiguration = validationConfiguration;
     this.filePathFormat = filePathFormat;
   }
+  
+  private void displayFarewellMessage() {
+    logger.logInfo("Goodbye, Young Explorer!");
+  }
+  
+  private void displayWelcomeMessage() {
+    logger.logInfo("Welcome, Young Explorer!");
+  }
 }
