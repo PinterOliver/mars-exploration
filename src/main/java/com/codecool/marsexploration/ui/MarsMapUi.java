@@ -37,6 +37,17 @@ public class MarsMapUi {
   
   
   @NotNull
+  private MapConfiguration getMapConfiguration() {
+    MapConfiguration configuration = createMapConfiguration();
+    while (!validator.isValid(configuration)) {
+      logger.logError("Entered configuration is not valid!");
+      logger.logInfo("Please enter a valid configuration! Thank you!");
+      configuration = createMapConfiguration();
+    }
+    return configuration;
+  }
+  
+  @NotNull
   private MapConfiguration createMapConfiguration() {
     int size = getInt(validationConfiguration.minimumMapSize(),
                       validationConfiguration.maximumMapSize(),
