@@ -50,6 +50,23 @@ public class MarsMapUi {
     }
     return resourceConfigurations;
   }
+  
+  @NotNull
+  private Collection<RangeConfiguration> getRangeConfigurations(@NotNull List<CellType> ranges, int minimumRangeNumber,
+          List<CellType> resources, int minimumResourceNumber) {
+    Collection<RangeConfiguration> rangeConfigurations = new ArrayList<>();
+    for (int i = 0; i < ranges.size(); i++) {
+      int maximumRangeNumber = remainingFreeTiles - (ranges.size() - i - 1) * minimumRangeNumber -
+                               resources.size() * minimumResourceNumber;
+      int numberOfElements =
+              getInt(minimumRangeNumber, maximumRangeNumber, String.format("number of %ss", ranges.get(i).getName()));
+      remainingFreeTiles -= numberOfElements;
+      int numberOfRanges = getInt(1, numberOfElements, String.format("number of %sranges", ranges.get(i).getName()));
+      rangeConfigurations.add(new RangeConfiguration(ranges.get(i), numberOfElements, numberOfRanges));
+    }
+    return rangeConfigurations;
+  }
+  
   private void displayFarewellMessage() {
     logger.logInfo("Goodbye, Young Explorer!");
   }
