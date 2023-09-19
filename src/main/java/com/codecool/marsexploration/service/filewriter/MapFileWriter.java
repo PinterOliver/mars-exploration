@@ -1,5 +1,5 @@
 package com.codecool.marsexploration.service.filewriter;
 
-public interface EasyFileWriter {
+public interface MapFileWriter {
   void writeFile(String filePath, String content);
 }

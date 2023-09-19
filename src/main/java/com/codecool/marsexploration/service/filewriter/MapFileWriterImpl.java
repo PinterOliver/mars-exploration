@@ -6,10 +6,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-public class EasyFileWriterImpl implements EasyFileWriter {
+public class MapFileWriterImpl implements MapFileWriter {
   private final Logger logger;
   
-  public EasyFileWriterImpl(Logger logger) {
+  public MapFileWriterImpl(Logger logger) {
     this.logger = logger;
   }
   
