@@ -3,6 +3,8 @@ package com.codecool.marsexploration;
 import com.codecool.marsexploration.data.cell.CellType;
 import com.codecool.marsexploration.data.config.MapValidationConfiguration;
 import com.codecool.marsexploration.data.config.RangeWithResource;
+import com.codecool.marsexploration.service.config.MapConfigurationProvider;
+import com.codecool.marsexploration.service.config.UiMapConfigurationGetter;
 import com.codecool.marsexploration.service.filewriter.MapFileWriter;
 import com.codecool.marsexploration.service.filewriter.MapFileWriterImpl;
 import com.codecool.marsexploration.service.input.Input;
@@ -21,7 +23,6 @@ import com.codecool.marsexploration.service.utilities.PickImpl;
 import com.codecool.marsexploration.service.validation.MapConfigurationValidator;
 import com.codecool.marsexploration.service.validation.MapConfigurationValidatorImpl;
 import com.codecool.marsexploration.ui.MarsMapUi;
-import com.codecool.marsexploration.visuals.Main;
 
 import java.util.*;
 
@@ -30,6 +31,8 @@ public class Application {
   private static final Logger LOGGER = new ConsoleLogger();
   private static final Scanner SCANNER = new Scanner(System.in);
   private static final Input INPUT = new InputImpl(SCANNER, LOGGER);
+  private static final List<MapConfigurationProvider> MAP_CONFIGURATION_PROVIDERS =
+          List.of(new UiMapConfigurationGetter(LOGGER, INPUT));
   private static final MapFileWriter FILE_WRITER = new MapFileWriterImpl(LOGGER);
   private static final Random RANDOM = new Random();
   private static final Pick PICK = new PickImpl(RANDOM);
@@ -50,20 +53,24 @@ public class Application {
           Map.of(CellType.MOUNTAIN, new MountainShapeGenerator(RANDOM), CellType.PIT, new PitShapeGenerator(RANDOM));
   private static final MapProvider MAP_PROVIDER = new MapGenerator(SHAPE_GENERATORS);
   private static final MapManager MAP_MANAGER = new MapManagerImpl(MAP_PROVIDER, FILE_WRITER);
-  private static final MarsMapUi UI =
-          new MarsMapUi(LOGGER, INPUT, MAP_MANAGER, VALIDATOR, VALIDATION_CONFIGURATION, FILE_PATH_FORMAT);
+  private static final MarsMapUi UI = new MarsMapUi(LOGGER,
+                                                    INPUT,
+                                                    MAP_MANAGER,
+                                                    VALIDATOR,
+                                                    VALIDATION_CONFIGURATION,
+                                                    FILE_PATH_FORMAT,
+                                                    MAP_CONFIGURATION_PROVIDERS);
   private static String FILE_PATH = "src/main/resources/maps/exploration.map";
-
+  
   public static String getFilePath() {
     return FILE_PATH;
   }
-
+  
   public static void setFilePath(String filePath) {
     FILE_PATH = filePath;
   }
   
   public static void main(String[] args) {
     UI.run();
-    Main.main(new String[] {});
   }
 }

@@ -33,8 +33,8 @@ public class MapGenerator implements MapProvider {
     generateShapes(configuration);
     placeResources(configuration);
     
-    log.logInfo(map.toString());
-    log.logInfo("restarts: " + restarts);
+    // log.logInfo(map.toString());
+    // log.logInfo("restarts: " + restarts);
     return map;
   }
   
@@ -79,15 +79,15 @@ public class MapGenerator implements MapProvider {
             restartGeneration(shapes, size);
           } else {
             createEmptyMap(size);
-            log.logError("Unlucky!");
+            // log.logError("Unlucky!");
             // maybe start over with newly generated shape sizes here
           }
-          log.logInfo("Breaking!");
+          // log.logInfo("Breaking!");
           break shapeGenerationLoop;
         }
       }
     }
-    log.logInfo("Shapes generated: " + numberOfShapesGenerated);
+    // log.logInfo("Shapes generated: " + numberOfShapesGenerated);
   }
   
   private void restartGeneration(HashMap<CellType, int[]> shapes, int size) {

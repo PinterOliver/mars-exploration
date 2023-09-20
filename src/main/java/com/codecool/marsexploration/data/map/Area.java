@@ -40,8 +40,8 @@ public class Area {
   public Cell getCell(Coordinate position) {
     int row = position.row();
     int column = position.column();
-    System.out.println("width: " + row);
-    System.out.println("column: " + column);
+    // System.out.println("width: " + row);
+    // System.out.println("column: " + column);
     return cells[row][column];
   }
   
