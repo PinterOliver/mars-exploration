@@ -40,9 +40,9 @@ public abstract class ShapeGeneratorImpl implements ShapeGenerator {
     
     while (quantity > generatedCount) {
       Coordinate randomCoordinate = new Coordinate(random.nextInt(height), random.nextInt(width));
-      System.out.println("random coordinate: " + randomCoordinate);
-      System.out.println("width: " + width);
-      System.out.println("height: " + height);
+      // System.out.println("random coordinate: " + randomCoordinate);
+      // System.out.println("width: " + width);
+      // System.out.println("height: " + height);
       if (area.getCell(randomCoordinate).getType() == CellType.EMPTY) {
         List<Cell> neighbours = area.getNeighbours(randomCoordinate, 1);
         boolean generate = generateChance(neighbours);
