@@ -20,7 +20,7 @@ public class Main extends Application {
   GraphicsContext context;
   
   public Main() throws FileNotFoundException {
-    map = MapLoader.loadMap(com.codecool.marsexploration.Application.FILE_PATH);
+    map = MapLoader.loadMap(com.codecool.marsexploration.Application.getFilePath());
     canvas = new Canvas(map.getWidth() * Tiles.BLOCK_HEIGHT, map.getHeight() * Tiles.BLOCK_HEIGHT);
     context = canvas.getGraphicsContext2D();
   }

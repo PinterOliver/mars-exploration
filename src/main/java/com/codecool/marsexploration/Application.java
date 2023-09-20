@@ -2,6 +2,7 @@ package com.codecool.marsexploration;
 
 import com.codecool.marsexploration.data.cell.CellType;
 import com.codecool.marsexploration.data.config.MapValidationConfiguration;
+import com.codecool.marsexploration.data.config.RangeWithResource;
 import com.codecool.marsexploration.service.filewriter.MapFileWriter;
 import com.codecool.marsexploration.service.filewriter.MapFileWriterImpl;
 import com.codecool.marsexploration.service.input.Input;
@@ -22,13 +23,9 @@ import com.codecool.marsexploration.service.validation.MapConfigurationValidator
 import com.codecool.marsexploration.ui.MarsMapUi;
 import com.codecool.marsexploration.visuals.Main;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Scanner;
+import java.util.*;
 
 public class Application {
-  public static final String FILE_PATH = "src/main/resources/maps/exploration.map";
   private static final String FILE_PATH_FORMAT = "src/main/resources/maps/exploration-%d.map";
   private static final Logger LOGGER = new ConsoleLogger();
   private static final Scanner SCANNER = new Scanner(System.in);
@@ -55,6 +52,15 @@ public class Application {
   private static final MapManager MAP_MANAGER = new MapManagerImpl(MAP_PROVIDER, FILE_WRITER);
   private static final MarsMapUi UI =
           new MarsMapUi(LOGGER, INPUT, MAP_MANAGER, VALIDATOR, VALIDATION_CONFIGURATION, FILE_PATH_FORMAT);
+  private static String FILE_PATH = "src/main/resources/maps/exploration.map";
+
+  public static String getFilePath() {
+    return FILE_PATH;
+  }
+
+  public static void setFilePath(String filePath) {
+    FILE_PATH = filePath;
+  }
   
   public static void main(String[] args) {
     UI.run();
