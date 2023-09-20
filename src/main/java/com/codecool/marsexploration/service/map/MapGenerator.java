@@ -152,7 +152,7 @@ public class MapGenerator implements MapProvider {
   
   private int[] generateShapeSizes(int numberOfShapes, int numberOfTiles) {
     int minimumShapeSizeFactor = 2;
-    int minimumShapeSize = numberOfTiles / (numberOfShapes * minimumShapeSizeFactor);
+    int minimumShapeSize = Math.max(numberOfTiles / (numberOfShapes * minimumShapeSizeFactor), 1);
     int remainingTilesToAssign = numberOfTiles;
     int[] shapeSizes = new int[numberOfShapes];
     
