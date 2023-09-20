@@ -1,5 +1,6 @@
 package com.codecool.marsexploration.service.map;
 
+import com.codecool.marsexploration.data.cell.Cell;
 import com.codecool.marsexploration.data.cell.CellType;
 import com.codecool.marsexploration.data.config.MapConfiguration;
 import com.codecool.marsexploration.data.config.RangeConfiguration;
@@ -62,14 +63,8 @@ public class MapGenerator implements MapProvider {
       int attemptsWithCurrentShapeSize = 0;
                  ShapeGenerator generator = shapeGenerators.get(specificShapeSizes.getKey());
       while (placedShapeCounter < specificShapeSizes.getValue().length) {
-        // generate Area with correct shapeGenerator
-        //                log.logInfo("Generating shape with size: " + specificShapeSizes.getValue()
-        //                [placedShapeCounter]);
-        
                        Area generatedShape = generator.generate(specificShapeSizes.getValue()[placedShapeCounter]);
         
-        // test shape
-        // Area generatedShape = shapeTest(specificShapeSizes.getKey());
         
         numberOfShapesGenerated++;
         attemptsWithCurrentShapeSize++;
@@ -102,17 +97,6 @@ public class MapGenerator implements MapProvider {
     createShapes(shapes, size);
   }
   
-  private Area shapeTest(CellType type) {
-    Area testArea = new Area(4, 4);
-    testArea.setCell(new Coordinate(1, 1), type);
-    testArea.setCell(new Coordinate(2, 1), type);
-    testArea.setCell(new Coordinate(3, 1), type);
-    testArea.setCell(new Coordinate(1, 2), type);
-    testArea.setCell(new Coordinate(1, 3), type);
-    //        testArea.setCell(new Coordinate(4, 4), type);
-    
-    return testArea;
-  }
   
   private boolean isSuccessfulShapePlacement(Area generatedShape, CellType type) {
     List<Coordinate> possibleStartPoints = generatePossibleStartPoints(generatedShape);
@@ -208,20 +192,11 @@ public class MapGenerator implements MapProvider {
   }
   
   private boolean isValidResourcePosition(Coordinate randomCoordinate, CellType requiredNeighbor, int size) {
-    
-    ArrayList<Coordinate> neighbors = new ArrayList<>();
-    // replace this with Areas getNeighbors method
-    neighbors.add(map.getCell(new Coordinate(Math.max(randomCoordinate.row() - 1, 0), randomCoordinate.column()))
-                     .getPosition());
-    neighbors.add(map.getCell(new Coordinate(Math.min(randomCoordinate.row() + 1, size - 1), randomCoordinate.column()))
-                     .getPosition());
-    neighbors.add(map.getCell(new Coordinate(randomCoordinate.row(), Math.max(randomCoordinate.column() - 1, 0)))
-                     .getPosition());
-    neighbors.add(map.getCell(new Coordinate(randomCoordinate.row(), Math.min(randomCoordinate.column() + 1, size - 1)))
-                     .getPosition());
-    
-    for (Coordinate option : neighbors) {
-      if (map.getCell(option).getType().equals(requiredNeighbor)) {
+       
+     Collection<Cell> neighborCells = map.getNeighbours(randomCoordinate, 1);
+     
+    for (Cell option : neighborCells) {
+      if (option.getType().equals(requiredNeighbor)) {
         return true;
       }
     }
