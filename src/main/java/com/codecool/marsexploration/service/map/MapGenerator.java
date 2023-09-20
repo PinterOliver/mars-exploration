@@ -177,13 +177,23 @@ public class MapGenerator implements MapProvider {
       CellType requiredNeighbor = getRequiredNeighbor(configuration.type());
       ArrayList<Coordinate> emptyCoordinates = getEmptyCells();
       
-      while (numberOfResources > 0) {
+      while (numberOfResources > 0 && !emptyCoordinates.isEmpty()) {
         int emptyCoordinateIndex = RANDOM.nextInt(emptyCoordinates.size());
         Coordinate randomCoordinate = emptyCoordinates.get(emptyCoordinateIndex);
         emptyCoordinates.remove(emptyCoordinateIndex);
         if (isValidResourcePosition(randomCoordinate, requiredNeighbor, mapConfiguration.size())) {
           map.setCell(randomCoordinate, configuration.type());
           numberOfResources--;
+        }
+      }
+      while (numberOfResources > 0){
+        Coordinate coordinate = new Coordinate(RANDOM.nextInt(map.getHeight()), RANDOM.nextInt(map.getWidth()));
+        if (map.getCell(coordinate).getType() == CellType.EMPTY){
+          List<Cell> neighbours = map.getNeighbours(coordinate, 1);
+          if (neighbours.stream().anyMatch(neighbour -> neighbour.getType() == configuration.type())){
+            map.setCell(coordinate, configuration.type());
+            numberOfResources--;
+          }
         }
       }
     }
