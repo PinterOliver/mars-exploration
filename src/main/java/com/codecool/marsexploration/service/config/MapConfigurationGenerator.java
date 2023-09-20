@@ -68,7 +68,7 @@ public class MapConfigurationGenerator implements MapConfigurationProvider{
               tiles.getTypeElementInterval(rangeType).minimum(),
               tiles.getTypeElementInterval(rangeType).maximum());
       tiles.remove(rangeType, numberOfElements);
-      int numberOfRanges = RANDOM.nextInt(1, numberOfElements);
+      int numberOfRanges = RANDOM.nextInt(1, Math.max((numberOfElements / 5), 2));
       rangeConfigurations.add(new RangeConfiguration(rangeType, numberOfElements, numberOfRanges));
     }
     
