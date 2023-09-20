@@ -20,10 +20,10 @@ public class MapGenerator implements MapProvider {
   private MarsMap map;
   private Map<CellType, ShapeGenerator> shapeGenerators;
   private int restarts = 0;
-
-     public MapGenerator(Map<CellType, ShapeGenerator> shapeGenerators) {
-         this.shapeGenerators = shapeGenerators;
-     }
+  
+  public MapGenerator(Map<CellType, ShapeGenerator> shapeGenerators) {
+    this.shapeGenerators = shapeGenerators;
+  }
   
   @Override
   public MarsMap generate(MapConfiguration configuration) {
@@ -61,10 +61,9 @@ public class MapGenerator implements MapProvider {
     for (Map.Entry<CellType, int[]> specificShapeSizes : shapes.entrySet()) {
       int placedShapeCounter = 0;
       int attemptsWithCurrentShapeSize = 0;
-                 ShapeGenerator generator = shapeGenerators.get(specificShapeSizes.getKey());
+      ShapeGenerator generator = shapeGenerators.get(specificShapeSizes.getKey());
       while (placedShapeCounter < specificShapeSizes.getValue().length) {
-                       Area generatedShape = generator.generate(specificShapeSizes.getValue()[placedShapeCounter]);
-        
+        Area generatedShape = generator.generate(specificShapeSizes.getValue()[placedShapeCounter]);
         
         numberOfShapesGenerated++;
         attemptsWithCurrentShapeSize++;
@@ -96,7 +95,6 @@ public class MapGenerator implements MapProvider {
     map = new MarsMap(size);
     createShapes(shapes, size);
   }
-  
   
   private boolean isSuccessfulShapePlacement(Area generatedShape, CellType type) {
     List<Coordinate> possibleStartPoints = generatePossibleStartPoints(generatedShape);
@@ -192,9 +190,9 @@ public class MapGenerator implements MapProvider {
   }
   
   private boolean isValidResourcePosition(Coordinate randomCoordinate, CellType requiredNeighbor, int size) {
-       
-     Collection<Cell> neighborCells = map.getNeighbours(randomCoordinate, 1);
-     
+    
+    Collection<Cell> neighborCells = map.getNeighbours(randomCoordinate, 1);
+    
     for (Cell option : neighborCells) {
       if (option.getType().equals(requiredNeighbor)) {
         return true;
