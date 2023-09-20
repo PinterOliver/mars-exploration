@@ -1,6 +1,9 @@
 package com.codecool.marsexploration.data.cell;
 
+import org.jetbrains.annotations.NotNull;
+
 public enum CellType {
+  VOID("x"),
   EMPTY(" "),
   MOUNTAIN("^"),
   PIT("#"),
@@ -14,5 +17,9 @@ public enum CellType {
   
   public String getSymbol() {
     return symbol;
+  }
+  
+  public @NotNull String getName() {
+    return toString().toLowerCase();
   }
 }
