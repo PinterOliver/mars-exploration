@@ -4,6 +4,8 @@ import com.codecool.marsexploration.data.cell.CellType;
 import com.codecool.marsexploration.data.config.MapValidationConfiguration;
 import com.codecool.marsexploration.data.config.RangeWithResource;
 import com.codecool.marsexploration.service.config.MapConfigurationProvider;
+import com.codecool.marsexploration.service.config.TilesCalculator;
+import com.codecool.marsexploration.service.config.TilesManager;
 import com.codecool.marsexploration.service.config.UiMapConfigurationGetter;
 import com.codecool.marsexploration.service.filewriter.MapFileWriter;
 import com.codecool.marsexploration.service.filewriter.MapFileWriterImpl;
@@ -28,11 +30,12 @@ import java.util.*;
 
 public class Application {
   private static final String FILE_PATH_FORMAT = "src/main/resources/maps/exploration-%d.map";
+  private static final TilesManager TILES_MANAGER = new TilesCalculator();
   private static final Logger LOGGER = new ConsoleLogger();
   private static final Scanner SCANNER = new Scanner(System.in);
   private static final Input INPUT = new InputImpl(SCANNER, LOGGER);
   private static final List<MapConfigurationProvider> MAP_CONFIGURATION_PROVIDERS =
-          List.of(new UiMapConfigurationGetter(LOGGER, INPUT));
+          List.of(new UiMapConfigurationGetter(LOGGER, INPUT, TILES_MANAGER));
   private static final MapFileWriter FILE_WRITER = new MapFileWriterImpl(LOGGER);
   private static final Random RANDOM = new Random();
   private static final Pick PICK = new PickImpl(RANDOM);
@@ -47,8 +50,7 @@ public class Application {
                                                                                                                     new RangeWithResource(
                                                                                                                             CellType.PIT,
                                                                                                                             Set.of(CellType.WATER))));
-  private static final MapConfigurationValidator VALIDATOR =
-          new MapConfigurationValidatorImpl(VALIDATION_CONFIGURATION);
+  private static final MapConfigurationValidator VALIDATOR = new MapConfigurationValidatorImpl();
   private static final Map<CellType, ShapeProvider> SHAPE_GENERATORS =
           Map.of(CellType.MOUNTAIN, new MountainShapeGenerator(RANDOM), CellType.PIT, new PitShapeGenerator(RANDOM));
   private static final MapProvider MAP_PROVIDER = new MapGenerator(SHAPE_GENERATORS);

@@ -46,22 +46,22 @@ public class Main extends Application {
   private void onKeyPressed(KeyEvent keyEvent) {
     if (map.getPlayer() != null) {
       switch (keyEvent.getCode()) {
-        case UP:
+        case UP -> {
           map.movePlayer(0, -1);
           refresh();
-          break;
-        case DOWN:
+        }
+        case DOWN -> {
           map.movePlayer(0, 1);
           refresh();
-          break;
-        case LEFT:
+        }
+        case LEFT -> {
           map.movePlayer(-1, 0);
           refresh();
-          break;
-        case RIGHT:
+        }
+        case RIGHT -> {
           map.movePlayer(1, 0);
           refresh();
-          break;
+        }
       }
     }
   }

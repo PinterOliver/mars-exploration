@@ -15,15 +15,13 @@ public class MapLoader {
     InputStream is = readFile(filePath);
     Scanner scanner = new Scanner(is);
     int size = scanner.nextInt();
-    int width = size;
-    int height = size;
     
     scanner.nextLine(); // empty line
     //        mountains (^), pits (#), minerals (*), and pockets of water (~).
-    GameMap map = new GameMap(width, height, VirtualCellType.EMPTY);
-    for (int y = 0; y < height; y++) {
+    GameMap map = new GameMap(size, size, VirtualCellType.EMPTY);
+    for (int y = 0; y < size; y++) {
       String line = scanner.nextLine();
-      for (int x = 0; x < width; x++) {
+      for (int x = 0; x < size; x++) {
         if (x < line.length()) {
           VirtualCell virtualCell = map.getCell(x, y);
           switch (line.charAt(x)) {
@@ -46,13 +44,13 @@ public class MapLoader {
   
   private static InputStream readFile(String filePath) throws FileNotFoundException {
     File initialFile = new File(filePath);
-    InputStream is = null;
+    InputStream inputStream;
     try {
-      is = new FileInputStream(initialFile);
+      inputStream = new FileInputStream(initialFile);
     } catch (FileNotFoundException e) {
       System.out.println("Could not load map file. Try placing it in the App's folder or pass the filename as args.");
       throw new FileNotFoundException("Map file not found.");
     }
-    return is;
+    return inputStream;
   }
 }

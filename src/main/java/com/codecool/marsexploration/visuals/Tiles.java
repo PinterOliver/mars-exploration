@@ -9,9 +9,9 @@ import java.util.Map;
 
 public class Tiles {
   public static final int BLOCK_HEIGHT = 25;
-  public static int TILE_WIDTH = 32;
-  private static Image tileset = new Image("/tiles.png", 543 * 2, 543 * 2, true, false);
-  private static Map<String, Tile> tileMap = new HashMap<>();
+  public static final int TILE_WIDTH = 32;
+  private static final Image tileset = new Image("/tiles.png", 543 * 2, 543 * 2, true, false);
+  private static final Map<String, Tile> tileMap = new HashMap<>();
   
   static {
     tileMap.put("empty", new Tile(2, 0));

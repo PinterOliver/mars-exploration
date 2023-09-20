@@ -6,17 +6,14 @@ import org.jetbrains.annotations.NotNull;
 import java.util.stream.Collectors;
 
 public class MapConfigurationValidatorImpl implements MapConfigurationValidator {
-  private final MapValidationConfiguration validationConfiguration;
-  
-  public MapConfigurationValidatorImpl(@NotNull MapValidationConfiguration validationConfiguration) {
-    this.validationConfiguration = validationConfiguration;
-  }
+  private MapValidationConfiguration validationConfiguration;
   
   @Override
-  public boolean isValid(MapConfiguration configuration) {
+  public boolean isValid(MapConfiguration configuration, @NotNull MapValidationConfiguration validationConfiguration) {
     if (configuration == null) {
       return false;
     }
+    this.validationConfiguration = validationConfiguration;
     boolean isValid = isMapSizeValid(configuration);
     isValid = isFilledTilesRatioValid(configuration, isValid);
     isValid = areCellTypeListsValid(configuration, isValid);
