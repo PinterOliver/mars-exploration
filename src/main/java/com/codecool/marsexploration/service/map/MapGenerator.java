@@ -34,10 +34,17 @@ public class MapGenerator implements MapProvider {
     
     generateShapes(configuration);
     placeResources(configuration);
+    placeAlien();
     
     log.logInfo(map.toString());
     // log.logInfo("restarts: " + restarts);
     return map;
+  }
+  
+  private void placeAlien() {
+    ArrayList<Coordinate> emptyCoordinates = getEmptyCells();
+    int randomIndex = RANDOM.nextInt(emptyCoordinates.size());
+    map.setCell(emptyCoordinates.get(randomIndex), CellType.ALIEN);
   }
   
   private void generateShapes(MapConfiguration configuration) {
