@@ -1,4 +1,4 @@
 package com.codecool.marsexploration.data.config;
 
-public record MapConfiguration() {
+public record MapConfiguration(int size) {
 }
