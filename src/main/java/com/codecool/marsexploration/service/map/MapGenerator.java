@@ -186,6 +186,16 @@ public class MapGenerator implements MapProvider {
           numberOfResources--;
         }
       }
+      while (numberOfResources > 0){
+        Coordinate coordinate = new Coordinate(RANDOM.nextInt(map.getHeight()), RANDOM.nextInt(map.getWidth()));
+        if (map.getCell(coordinate).getType() == CellType.EMPTY){
+          List<Cell> neighbours = map.getNeighbours(coordinate, 1);
+          if (neighbours.stream().anyMatch(neighbour -> neighbour.getType() == configuration.type())){
+            map.setCell(coordinate, configuration.type());
+            numberOfResources--;
+          }
+        }
+      }
     }
   }
   
