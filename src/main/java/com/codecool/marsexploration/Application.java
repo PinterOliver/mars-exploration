@@ -17,12 +17,14 @@ import com.codecool.marsexploration.service.utilities.PickImpl;
 import com.codecool.marsexploration.service.validation.MapConfigurationValidator;
 import com.codecool.marsexploration.service.validation.MapConfigurationValidatorImpl;
 import com.codecool.marsexploration.ui.MarsMapUi;
+import com.codecool.marsexploration.visuals.Main;
 
 import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 
 public class Application {
+  public static final String FILE_PATH = "src/main/resources/maps/exploration.map";
   private static final MapProvider MAP_PROVIDER = null;
   private static final String FILE_PATH_FORMAT = "src/main/resources/maps/exploration-%d.map";
   private static final Logger LOGGER = new ConsoleLogger();
@@ -49,5 +51,6 @@ public class Application {
   
   public static void main(String[] args) {
     UI.run();
+    Main.main(new String[] {});
   }
 }

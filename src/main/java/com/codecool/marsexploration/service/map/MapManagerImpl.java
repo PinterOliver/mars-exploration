@@ -1,5 +1,6 @@
 package com.codecool.marsexploration.service.map;
 
+import com.codecool.marsexploration.Application;
 import com.codecool.marsexploration.data.config.MapConfiguration;
 import com.codecool.marsexploration.data.map.MarsMap;
 import com.codecool.marsexploration.service.filewriter.MapFileWriter;
@@ -18,5 +19,6 @@ public class MapManagerImpl implements MapManager {
     MarsMap marsMap = provider.generate(configuration);
     String mapAsString = marsMap.toString();
     fileWriter.writeFile(filePath, mapAsString);
+    fileWriter.writeFile(Application.FILE_PATH, mapAsString);
   }
 }
