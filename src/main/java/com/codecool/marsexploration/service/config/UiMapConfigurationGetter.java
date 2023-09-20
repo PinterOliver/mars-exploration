@@ -2,6 +2,7 @@ package com.codecool.marsexploration.service.config;
 
 import com.codecool.marsexploration.data.cell.CellType;
 import com.codecool.marsexploration.data.config.*;
+import com.codecool.marsexploration.data.utilities.Interval;
 import com.codecool.marsexploration.service.input.Input;
 import com.codecool.marsexploration.service.logger.Logger;
 import javafx.util.Pair;
@@ -15,40 +16,29 @@ public class UiMapConfigurationGetter implements MapConfigurationProvider {
   private static final String NAME = "Manual Map Configurator";
   private final Logger logger;
   private final Input input;
-  private int remainingFreeTiles;
+  private final TilesManager tiles;
+  private MapValidationConfiguration validationConfiguration;
   
-  public UiMapConfigurationGetter(Logger logger, Input input) {
+  public UiMapConfigurationGetter(Logger logger, Input input, TilesManager tilesManager) {
     this.logger = logger;
     this.input = input;
+    this.tiles = tilesManager;
   }
   
   @Override
-  public MapConfiguration get(MapValidationConfiguration validationConfiguration) {
-    int size = getInt(validationConfiguration.minimumMapSize(),
-                      validationConfiguration.maximumMapSize(),
-                      "size of the map");
+  public MapConfiguration getMapConfiguration(@NotNull MapValidationConfiguration validationConfiguration) {
+    this.validationConfiguration = validationConfiguration;
+    int size = getSize();
     
-    int mapSize = (int) Math.pow(size, 2);
-    remainingFreeTiles = (int) (mapSize * validationConfiguration.maxFilledTilesRatio());
-    logger.logInfo(String.format("The maximum number of all elements: %d", remainingFreeTiles));
-    int minimumRangeNumber = (int) (mapSize * validationConfiguration.minimumRangeTypeRatio());
-    int minimumResourceNumber = (int) (mapSize * validationConfiguration.minimumResourceTypeRatio());
+    List<CellType> ranges = getRangeTypes();
+    List<Pair<CellType, CellType>> resources = getResourceTypes();
+    List<CellType> resourceList = resources.stream().map(Pair::getKey).toList();
     
-    List<CellType> ranges =
-            validationConfiguration.rangeTypesWithResources().stream().map(RangeWithResource::rangeType).toList();
-    List<Pair<CellType, CellType>> resources = validationConfiguration.rangeTypesWithResources()
-                                                                      .stream()
-                                                                      .flatMap(range -> range.resourceTypes()
-                                                                                             .stream()
-                                                                                             .map(resource -> new Pair<>(
-                                                                                                     resource,
-                                                                                                     range.rangeType())))
-                                                                      .toList();
+    tiles.startManagingTiles(size, validationConfiguration, ranges, resourceList);
+    logger.logInfo(String.format("The maximum number of all elements: %d", tiles.getRemainingFreeTiles()));
     
-    Collection<RangeConfiguration> rangeConfigurations =
-            getRangeConfigurations(ranges, minimumRangeNumber, resources, minimumResourceNumber);
-    Collection<ResourceConfiguration> resourceConfigurations =
-            getResourceConfigurations(resources, minimumResourceNumber);
+    Collection<RangeConfiguration> rangeConfigurations = getRangeConfigurations(ranges);
+    Collection<ResourceConfiguration> resourceConfigurations = getResourceConfigurations(resources);
     
     return new MapConfiguration(size, rangeConfigurations, resourceConfigurations);
   }
@@ -58,43 +48,63 @@ public class UiMapConfigurationGetter implements MapConfigurationProvider {
     return NAME;
   }
   
+  private int getSize() {
+    return getInt(new Interval<>(validationConfiguration.minimumMapSize(), validationConfiguration.maximumMapSize()),
+                  "size of the map");
+  }
+  
   @NotNull
-  private Collection<ResourceConfiguration> getResourceConfigurations(@NotNull List<Pair<CellType, CellType>> resources,
-          int minimumResourceNumber) {
+  private List<Pair<CellType, CellType>> getResourceTypes() {
+    return validationConfiguration.rangeTypesWithResources()
+                                  .stream()
+                                  .flatMap(range -> range.resourceTypes()
+                                                         .stream()
+                                                         .map(resource -> new Pair<>(resource, range.rangeType())))
+                                  .toList();
+  }
+  
+  @NotNull
+  private List<CellType> getRangeTypes() {
+    return validationConfiguration.rangeTypesWithResources().stream().map(RangeWithResource::rangeType).toList();
+  }
+  
+  @NotNull
+  private Collection<ResourceConfiguration> getResourceConfigurations(
+          @NotNull List<Pair<CellType, CellType>> resources) {
     Collection<ResourceConfiguration> resourceConfigurations = new ArrayList<>();
-    for (int i = 0; i < resources.size(); i++) {
-      int maximumResourceNumber = remainingFreeTiles - (resources.size() - i - 1) * minimumResourceNumber;
-      int numberOfElements = getInt(minimumResourceNumber,
-                                    maximumResourceNumber,
-                                    String.format("number of %ss", resources.get(i).getKey().getName()));
-      remainingFreeTiles -= numberOfElements;
-      resourceConfigurations.add(new ResourceConfiguration(resources.get(i).getKey(),
+    
+    for (Pair<CellType, CellType> resourceType : resources) {
+      int numberOfElements = getInt(tiles.getTypeElementInterval(resourceType.getKey()),
+                                    String.format("number of %ss", resourceType.getKey().getName()));
+      tiles.remove(resourceType.getKey(), numberOfElements);
+      resourceConfigurations.add(new ResourceConfiguration(resourceType.getKey(),
                                                            numberOfElements,
-                                                           resources.get(i).getValue()));
+                                                           resourceType.getValue()));
     }
+    
     return resourceConfigurations;
   }
   
   @NotNull
-  private Collection<RangeConfiguration> getRangeConfigurations(@NotNull List<CellType> ranges, int minimumRangeNumber,
-          List<Pair<CellType, CellType>> resources, int minimumResourceNumber) {
+  private Collection<RangeConfiguration> getRangeConfigurations(@NotNull List<CellType> ranges) {
     Collection<RangeConfiguration> rangeConfigurations = new ArrayList<>();
-    for (int i = 0; i < ranges.size(); i++) {
-      int maximumRangeNumber = remainingFreeTiles - (ranges.size() - i - 1) * minimumRangeNumber -
-                               resources.size() * minimumResourceNumber;
+    
+    for (CellType rangeType : ranges) {
       int numberOfElements =
-              getInt(minimumRangeNumber, maximumRangeNumber, String.format("number of %ss", ranges.get(i).getName()));
-      remainingFreeTiles -= numberOfElements;
-      int numberOfRanges = getInt(1, numberOfElements, String.format("number of %sranges", ranges.get(i).getName()));
-      rangeConfigurations.add(new RangeConfiguration(ranges.get(i), numberOfElements, numberOfRanges));
+              getInt(tiles.getTypeElementInterval(rangeType), String.format("number of %ss", rangeType.getName()));
+      tiles.remove(rangeType, numberOfElements);
+      int numberOfRanges =
+              getInt(new Interval<>(1, numberOfElements), String.format("number of %sranges", rangeType.getName()));
+      rangeConfigurations.add(new RangeConfiguration(rangeType, numberOfElements, numberOfRanges));
     }
+    
     return rangeConfigurations;
   }
   
-  private int getInt(int minimumValue, int maximumValue, String message) {
+  private int getInt(@NotNull Interval<Integer> interval, String message) {
     logger.logInfo(String.format("Enter the %s!", message));
-    logger.logInfo(String.format("Validation: [minimum: %d, maximum: %d]", minimumValue, maximumValue));
-    return getIntInRange(minimumValue, maximumValue);
+    logger.logInfo(String.format("Validation: [minimum: %d, maximum: %d]", interval.minimum(), interval.maximum()));
+    return getIntInRange(interval.minimum(), interval.maximum());
   }
   
   private int getIntInRange(int minimumValue, int maximumValue) {

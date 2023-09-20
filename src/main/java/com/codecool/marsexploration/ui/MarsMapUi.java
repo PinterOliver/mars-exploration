@@ -22,7 +22,6 @@ public class MarsMapUi {
   private final MapValidationConfiguration validationConfiguration;
   private final String filePathFormat;
   private final List<MapConfigurationProvider> mapConfigurationProviders;
-  private int remainingFreeTiles;
   
   public MarsMapUi(Logger logger, Input input, MapManager mapManager, MapConfigurationValidator validator,
           MapValidationConfiguration validationConfiguration, String filePathFormat,
@@ -71,11 +70,11 @@ public class MarsMapUi {
   @NotNull
   private MapConfiguration getMapConfiguration() {
     MapConfigurationProvider provider = selectProvider();
-    MapConfiguration configuration = provider.get(validationConfiguration);
-    while (!validator.isValid(configuration)) {
+    MapConfiguration configuration = provider.getMapConfiguration(validationConfiguration);
+    while (!validator.isValid(configuration, validationConfiguration)) {
       logger.logError("Entered configuration is not valid!");
       logger.logInfo("Please enter a valid configuration! Thank you!");
-      configuration = provider.get(validationConfiguration);
+      configuration = provider.getMapConfiguration(validationConfiguration);
     }
     return configuration;
   }
