@@ -1,4 +1,4 @@
 *.iml
 target
 .idea
-/src/main/resources/maps/
+/src/main/resources/maps/*
