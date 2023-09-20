@@ -9,6 +9,7 @@ import com.codecool.marsexploration.data.map.MarsMap;
 import com.codecool.marsexploration.data.utilities.Coordinate;
 import com.codecool.marsexploration.service.logger.ConsoleLogger;
 import com.codecool.marsexploration.service.logger.Logger;
+import com.codecool.marsexploration.service.map.shape.ShapeGenerator;
 
 import java.util.*;
 
@@ -18,10 +19,10 @@ public class MapGenerator implements MapProvider {
   private MarsMap map;
   private Map<CellType, ShapeGenerator> shapeGenerators;
   private int restarts = 0;
-  //
-  //    public MapGenerator(Map<CellType, ShapeGenerator> shapeGenerators) {
-  //        this.shapeGenerators = shapeGenerators;
-  //    }
+
+     public MapGenerator(Map<CellType, ShapeGenerator> shapeGenerators) {
+         this.shapeGenerators = shapeGenerators;
+     }
   
   @Override
   public MarsMap generate(MapConfiguration configuration) {
@@ -59,16 +60,16 @@ public class MapGenerator implements MapProvider {
     for (Map.Entry<CellType, int[]> specificShapeSizes : shapes.entrySet()) {
       int placedShapeCounter = 0;
       int attemptsWithCurrentShapeSize = 0;
-      //            ShapeGenerator generator = shapeGenerators.get(specificShapeSizes.getKey());
+                 ShapeGenerator generator = shapeGenerators.get(specificShapeSizes.getKey());
       while (placedShapeCounter < specificShapeSizes.getValue().length) {
         // generate Area with correct shapeGenerator
         //                log.logInfo("Generating shape with size: " + specificShapeSizes.getValue()
         //                [placedShapeCounter]);
         
-        //                Area generatedShape = generator.generate(specificShapeSizes.getValue()[placedShapeCounter]);
+                       Area generatedShape = generator.generate(specificShapeSizes.getValue()[placedShapeCounter]);
         
         // test shape
-        Area generatedShape = shapeTest(specificShapeSizes.getKey());
+        // Area generatedShape = shapeTest(specificShapeSizes.getKey());
         
         numberOfShapesGenerated++;
         attemptsWithCurrentShapeSize++;
