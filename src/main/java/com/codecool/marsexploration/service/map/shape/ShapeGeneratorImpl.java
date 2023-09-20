@@ -8,7 +8,7 @@ import com.codecool.marsexploration.data.utilities.Coordinate;
 import java.util.List;
 import java.util.Random;
 
-public abstract class ShapeGeneratorImpl implements ShapeGenerator {
+public abstract class ShapeGeneratorImpl implements ShapeProvider {
   private final double defaultChance;
   private final double plusPerNeighbour;
   private final Random random;
@@ -22,7 +22,7 @@ public abstract class ShapeGeneratorImpl implements ShapeGenerator {
   }
   
   @Override
-  public Area generate(int quantity) {
+  public Area get(int quantity) {
     double a = Math.sqrt(quantity * 3);
     double plusMinus = random.nextDouble(-a / 4, a / 4);
     int width = (int) (a + plusMinus);
