@@ -4,6 +4,9 @@ import com.codecool.marsexploration.data.cell.Cell;
 import com.codecool.marsexploration.data.cell.CellType;
 import com.codecool.marsexploration.data.utilities.Coordinate;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Area {
   protected final int height;
   protected final int width;
@@ -27,23 +30,46 @@ public class Area {
     }
     return stringBuilder.toString();
   }
-
-  public Cell getCell(Coordinate coordinate){
-    return cells[coordinate.row()][coordinate.column()];
+  
+  public void setCell(Coordinate position, CellType cellType) {
+    int row = position.row();
+    int column = position.column();
+    cells[row][column].setType(cellType);
   }
-
-  public void setCell(Coordinate coordinate, CellType type){
-    cells[coordinate.row()][coordinate.column()].setType(type);
+  
+  public Cell getCell(Coordinate position) {
+    int row = position.row();
+    int column = position.column();
+    System.out.println("width: " + row);
+    System.out.println("column: " + column);
+    return cells[row][column];
   }
-
+  
   public int getHeight() {
     return height;
   }
-
+  
   public int getWidth() {
     return width;
   }
-
+  
+  public List<Cell> getNeighbours(Coordinate coordinate, int radius) {
+    int y = coordinate.row();
+    int x = coordinate.column();
+    
+    List<Cell> neighbours = new ArrayList<>();
+    
+    for (int i = y - radius; i <= y + radius; i++) {
+      for (int j = x - radius; j <= x + radius; j++) {
+        boolean validCell = (i != y) && (j != x) && (i < height) && (j < width) && (i > 0) && (j > 0);
+        if (validCell) {
+          neighbours.add(cells[i][j]);
+        }
+      }
+    }
+    return neighbours;
+  }
+  
   private void fillCellsWithEmptyCells() {
     for (int row = 0; row < height; row++) {
       for (int column = 0; column < width; column++) {
