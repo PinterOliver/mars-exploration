@@ -14,7 +14,7 @@ import com.codecool.marsexploration.service.map.MapManagerImpl;
 import com.codecool.marsexploration.service.map.MapProvider;
 import com.codecool.marsexploration.service.map.shape.MountainShapeGenerator;
 import com.codecool.marsexploration.service.map.shape.PitShapeGenerator;
-import com.codecool.marsexploration.service.map.shape.ShapeGenerator;
+import com.codecool.marsexploration.service.map.shape.ShapeProvider;
 import com.codecool.marsexploration.service.utilities.Pick;
 import com.codecool.marsexploration.service.utilities.PickImpl;
 import com.codecool.marsexploration.service.validation.MapConfigurationValidator;
@@ -41,13 +41,15 @@ public class Application {
                                                                                                             40,
                                                                                                             0.05,
                                                                                                             0.01,
-                                                                                                            List.of(CellType.MOUNTAIN,
-                                                                                                                    CellType.PIT),
-                                                                                                            List.of(CellType.WATER,
-                                                                                                                    CellType.MINERAL));
+                                                                                                            List.of(new RangeWithResource(
+                                                                                                                            CellType.MOUNTAIN,
+                                                                                                                            Set.of(CellType.MINERAL)),
+                                                                                                                    new RangeWithResource(
+                                                                                                                            CellType.PIT,
+                                                                                                                            Set.of(CellType.WATER))));
   private static final MapConfigurationValidator VALIDATOR =
           new MapConfigurationValidatorImpl(VALIDATION_CONFIGURATION);
-  private static final Map<CellType, ShapeGenerator> SHAPE_GENERATORS =
+  private static final Map<CellType, ShapeProvider> SHAPE_GENERATORS =
           Map.of(CellType.MOUNTAIN, new MountainShapeGenerator(RANDOM), CellType.PIT, new PitShapeGenerator(RANDOM));
   private static final MapProvider MAP_PROVIDER = new MapGenerator(SHAPE_GENERATORS);
   private static final MapManager MAP_MANAGER = new MapManagerImpl(MAP_PROVIDER, FILE_WRITER);

@@ -1,14 +1,13 @@
 package com.codecool.marsexploration.ui;
 
+import com.codecool.marsexploration.Application;
 import com.codecool.marsexploration.data.cell.CellType;
-import com.codecool.marsexploration.data.config.MapConfiguration;
-import com.codecool.marsexploration.data.config.MapValidationConfiguration;
-import com.codecool.marsexploration.data.config.RangeConfiguration;
-import com.codecool.marsexploration.data.config.ResourceConfiguration;
+import com.codecool.marsexploration.data.config.*;
 import com.codecool.marsexploration.service.input.Input;
 import com.codecool.marsexploration.service.logger.Logger;
 import com.codecool.marsexploration.service.map.MapManager;
 import com.codecool.marsexploration.service.validation.MapConfigurationValidator;
+import javafx.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -40,6 +39,7 @@ public class MarsMapUi {
     if (checkWhetherValidationConfigurationIsValid()) {
       MapConfiguration configuration = getMapConfiguration();
       String filePath = getFilePath();
+      Application.setFilePath(filePath);
       manager.createMap(configuration, filePath);
     } else {
       logger.logError("Validation configuration is invalid!");
@@ -49,8 +49,12 @@ public class MarsMapUi {
   
   private boolean checkWhetherValidationConfigurationIsValid() {
     return validationConfiguration.maxFilledTilesRatio() >
-           validationConfiguration.minimumRangeTypeRatio() * validationConfiguration.rangeTypes().size() +
-           validationConfiguration.minimumResourceTypeRatio() * validationConfiguration.resourceTypes().size();
+           validationConfiguration.minimumRangeTypeRatio() * validationConfiguration.rangeTypesWithResources().size() +
+           validationConfiguration.minimumResourceTypeRatio() * validationConfiguration.rangeTypesWithResources()
+                                                                                       .stream()
+                                                                                       .mapToLong(range -> range.resourceTypes()
+                                                                                                                .size())
+                                                                                       .sum();
   }
   
   @NotNull
@@ -87,8 +91,16 @@ public class MarsMapUi {
     int minimumRangeNumber = (int) (mapSize * validationConfiguration.minimumRangeTypeRatio());
     int minimumResourceNumber = (int) (mapSize * validationConfiguration.minimumResourceTypeRatio());
     
-    List<CellType> ranges = validationConfiguration.rangeTypes();
-    List<CellType> resources = validationConfiguration.resourceTypes();
+    List<CellType> ranges =
+            validationConfiguration.rangeTypesWithResources().stream().map(RangeWithResource::rangeType).toList();
+    List<Pair<CellType, CellType>> resources = validationConfiguration.rangeTypesWithResources()
+                                                                      .stream()
+                                                                      .flatMap(range -> range.resourceTypes()
+                                                                                             .stream()
+                                                                                             .map(resource -> new Pair<>(
+                                                                                                     resource,
+                                                                                                     range.rangeType())))
+                                                                      .toList();
     
     Collection<RangeConfiguration> rangeConfigurations =
             getRangeConfigurations(ranges, minimumRangeNumber, resources, minimumResourceNumber);
@@ -99,23 +111,25 @@ public class MarsMapUi {
   }
   
   @NotNull
-  private Collection<ResourceConfiguration> getResourceConfigurations(@NotNull List<CellType> resources,
+  private Collection<ResourceConfiguration> getResourceConfigurations(@NotNull List<Pair<CellType, CellType>> resources,
           int minimumResourceNumber) {
     Collection<ResourceConfiguration> resourceConfigurations = new ArrayList<>();
     for (int i = 0; i < resources.size(); i++) {
       int maximumResourceNumber = remainingFreeTiles - (resources.size() - i - 1) * minimumResourceNumber;
       int numberOfElements = getInt(minimumResourceNumber,
                                     maximumResourceNumber,
-                                    String.format("number of %ss", resources.get(i).getName()));
+                                    String.format("number of %ss", resources.get(i).getKey().getName()));
       remainingFreeTiles -= numberOfElements;
-      resourceConfigurations.add(new ResourceConfiguration(resources.get(i), numberOfElements));
+      resourceConfigurations.add(new ResourceConfiguration(resources.get(i).getKey(),
+                                                           numberOfElements,
+                                                           resources.get(i).getValue()));
     }
     return resourceConfigurations;
   }
   
   @NotNull
   private Collection<RangeConfiguration> getRangeConfigurations(@NotNull List<CellType> ranges, int minimumRangeNumber,
-          List<CellType> resources, int minimumResourceNumber) {
+          List<Pair<CellType, CellType>> resources, int minimumResourceNumber) {
     Collection<RangeConfiguration> rangeConfigurations = new ArrayList<>();
     for (int i = 0; i < ranges.size(); i++) {
       int maximumRangeNumber = remainingFreeTiles - (ranges.size() - i - 1) * minimumRangeNumber -
@@ -147,6 +161,7 @@ public class MarsMapUi {
     int inputNumber = input.get(Integer::parseInt);
     while (inputNumber < minimumValue || inputNumber > maximumValue) {
       logger.logError("Input out of range");
+      logger.logInfo("Please, enter again!");
       inputNumber = input.get(Integer::parseInt);
     }
     return inputNumber;
