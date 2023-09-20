@@ -7,12 +7,14 @@ import com.codecool.marsexploration.data.config.RangeConfiguration;
 import com.codecool.marsexploration.data.config.ResourceConfiguration;
 import com.codecool.marsexploration.data.map.Area;
 import com.codecool.marsexploration.data.map.MarsMap;
+import com.codecool.marsexploration.data.map.ShapeBlueprint;
 import com.codecool.marsexploration.data.utilities.Coordinate;
 import com.codecool.marsexploration.service.logger.ConsoleLogger;
 import com.codecool.marsexploration.service.logger.Logger;
 import com.codecool.marsexploration.service.map.shape.ShapeProvider;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class MapGenerator implements MapProvider {
   private final Random RANDOM = new Random();
@@ -33,64 +35,65 @@ public class MapGenerator implements MapProvider {
     generateShapes(configuration);
     placeResources(configuration);
     
-    // log.logInfo(map.toString());
+    log.logInfo(map.toString());
     // log.logInfo("restarts: " + restarts);
     return map;
   }
   
   private void generateShapes(MapConfiguration configuration) {
-    HashMap<CellType, int[]> shapeConfig = generateShapeConfigurations(configuration.ranges());
-    createShapes(shapeConfig, configuration.size());
+    List<ShapeBlueprint> shapeBlueprints = generateShapeConfigurations(
+            configuration.ranges()).stream()
+                                   .sorted(Comparator.comparingInt(ShapeBlueprint::size).reversed())
+                                   .collect(Collectors.toList());
+    
+    shapeBlueprints.forEach(System.out::println);
+    
+    createShapes(shapeBlueprints, configuration.size());
   }
   
-  private HashMap<CellType, int[]> generateShapeConfigurations(Collection<RangeConfiguration> configuration) {
-    HashMap<CellType, int[]> shapeConfig = new HashMap<>();
+  private List<ShapeBlueprint> generateShapeConfigurations(Collection<RangeConfiguration> configuration) {
+    List<ShapeBlueprint> shapeBlueprintList = new ArrayList<>();
     
     for (RangeConfiguration rangeConfig : configuration) {
-      shapeConfig.put(rangeConfig.type(),
-                      generateShapeSizes(rangeConfig.numberOfRanges(), rangeConfig.numberOfElements()));
+      shapeBlueprintList.addAll(generateShapeSizes(rangeConfig.numberOfRanges(),
+                                                   rangeConfig.numberOfElements(),
+                                                   rangeConfig.type()));
     }
-    return shapeConfig;
+    return shapeBlueprintList;
   }
   
-  private void createShapes(HashMap<CellType, int[]> shapes, int size) {
-    int numberOfShapesGenerated = 0;
+  private void createShapes(List<ShapeBlueprint> shapeBlueprintList, int size) {
     int attemptLimit = 100;
     
     shapeGenerationLoop:
-    for (Map.Entry<CellType, int[]> specificShapeSizes : shapes.entrySet()) {
-      int placedShapeCounter = 0;
+    for (ShapeBlueprint shapeBlueprint : shapeBlueprintList) {
       int attemptsWithCurrentShapeSize = 0;
-      ShapeProvider generator = shapeGenerators.get(specificShapeSizes.getKey());
-      while (placedShapeCounter < specificShapeSizes.getValue().length) {
-        Area generatedShape = generator.get(specificShapeSizes.getValue()[placedShapeCounter]);
+      ShapeProvider generator = shapeGenerators.get(shapeBlueprint.type());
+      boolean isPlaced = false;
+      while (!isPlaced) {
+        Area generatedShape = generator.get(shapeBlueprint.size());
         
-        numberOfShapesGenerated++;
         attemptsWithCurrentShapeSize++;
         
-        if (isSuccessfulShapePlacement(generatedShape, specificShapeSizes.getKey())) {
-          placedShapeCounter++;
+        if (isSuccessfulShapePlacement(generatedShape, shapeBlueprint.type())) {
+          isPlaced = true;
           attemptsWithCurrentShapeSize = 0;
         }
         
         // first version of exiting conditions - more thinking needed
         if (attemptsWithCurrentShapeSize >= attemptLimit) {
           if (restarts < attemptLimit) {
-            restartGeneration(shapes, size);
+            restartGeneration(shapeBlueprintList, size);
           } else {
             createEmptyMap(size);
-            // log.logError("Unlucky!");
-            // maybe start over with newly generated shape sizes here
           }
-          // log.logInfo("Breaking!");
           break shapeGenerationLoop;
         }
       }
     }
-    // log.logInfo("Shapes generated: " + numberOfShapesGenerated);
   }
   
-  private void restartGeneration(HashMap<CellType, int[]> shapes, int size) {
+  private void restartGeneration(List<ShapeBlueprint> shapes, int size) {
     restarts++;
     map = new MarsMap(size);
     createShapes(shapes, size);
@@ -150,20 +153,25 @@ public class MapGenerator implements MapProvider {
     return possibleStartPoints;
   }
   
-  private int[] generateShapeSizes(int numberOfShapes, int numberOfTiles) {
+  private List<ShapeBlueprint> generateShapeSizes(int numberOfShapes, int numberOfTiles, CellType type) {
     int minimumShapeSizeFactor = 2;
     int minimumShapeSize = Math.max(numberOfTiles / (numberOfShapes * minimumShapeSizeFactor), 1);
     int remainingTilesToAssign = numberOfTiles;
-    int[] shapeSizes = new int[numberOfShapes];
+    
+    List<ShapeBlueprint> shapeBlueprints = new ArrayList<>();
     
     for (int i = 0; i < numberOfShapes - 1; i++) {
       int numberOfShapesToGenerate = numberOfShapes - 2 - i;
       int maximumShapeSize = remainingTilesToAssign - (numberOfShapesToGenerate * minimumShapeSize);
-      shapeSizes[i] = RANDOM.nextInt(minimumShapeSize, maximumShapeSize);
-      remainingTilesToAssign -= shapeSizes[i];
+      int generatedSize = RANDOM.nextInt(minimumShapeSize, maximumShapeSize);
+      int shapeSize = Math.min(generatedSize, maximumShapeSize - generatedSize);
+      
+      shapeBlueprints.add(new ShapeBlueprint(type, shapeSize));
+      remainingTilesToAssign -= shapeSize;
     }
-    shapeSizes[numberOfShapes - 1] = remainingTilesToAssign;
-    return shapeSizes;
+    shapeBlueprints.add(new ShapeBlueprint(type, remainingTilesToAssign));
+    
+    return shapeBlueprints;
   }
   
   private void createEmptyMap(int size) {
@@ -186,11 +194,11 @@ public class MapGenerator implements MapProvider {
           numberOfResources--;
         }
       }
-      while (numberOfResources > 0){
+      while (numberOfResources > 0) {
         Coordinate coordinate = new Coordinate(RANDOM.nextInt(map.getHeight()), RANDOM.nextInt(map.getWidth()));
-        if (map.getCell(coordinate).getType() == CellType.EMPTY){
+        if (map.getCell(coordinate).getType() == CellType.EMPTY) {
           List<Cell> neighbours = map.getNeighbours(coordinate, 1);
-          if (neighbours.stream().anyMatch(neighbour -> neighbour.getType() == configuration.type())){
+          if (neighbours.stream().anyMatch(neighbour -> neighbour.getType() == configuration.type())) {
             map.setCell(coordinate, configuration.type());
             numberOfResources--;
           }
