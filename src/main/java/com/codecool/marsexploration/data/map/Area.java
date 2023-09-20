@@ -27,7 +27,23 @@ public class Area {
     }
     return stringBuilder.toString();
   }
-  
+
+  public Cell getCell(Coordinate coordinate){
+    return cells[coordinate.row()][coordinate.column()];
+  }
+
+  public void setCell(Coordinate coordinate, CellType type){
+    cells[coordinate.row()][coordinate.column()].setType(type);
+  }
+
+  public int getHeight() {
+    return height;
+  }
+
+  public int getWidth() {
+    return width;
+  }
+
   private void fillCellsWithEmptyCells() {
     for (int row = 0; row < height; row++) {
       for (int column = 0; column < width; column++) {
