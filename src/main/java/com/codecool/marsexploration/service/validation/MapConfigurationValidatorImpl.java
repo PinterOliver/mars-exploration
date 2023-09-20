@@ -1,26 +1,19 @@
 package com.codecool.marsexploration.service.validation;
 
-import com.codecool.marsexploration.data.config.MapConfiguration;
-import com.codecool.marsexploration.data.config.MapValidationConfiguration;
-import com.codecool.marsexploration.data.config.RangeConfiguration;
-import com.codecool.marsexploration.data.config.ResourceConfiguration;
+import com.codecool.marsexploration.data.config.*;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashSet;
 import java.util.stream.Collectors;
 
 public class MapConfigurationValidatorImpl implements MapConfigurationValidator {
-  private final MapValidationConfiguration validationConfiguration;
-  
-  public MapConfigurationValidatorImpl(@NotNull MapValidationConfiguration validationConfiguration) {
-    this.validationConfiguration = validationConfiguration;
-  }
+  private MapValidationConfiguration validationConfiguration;
   
   @Override
-  public boolean isValid(MapConfiguration configuration) {
+  public boolean isValid(MapConfiguration configuration, @NotNull MapValidationConfiguration validationConfiguration) {
     if (configuration == null) {
       return false;
     }
+    this.validationConfiguration = validationConfiguration;
     boolean isValid = isMapSizeValid(configuration);
     isValid = isFilledTilesRatioValid(configuration, isValid);
     isValid = areCellTypeListsValid(configuration, isValid);
@@ -40,12 +33,18 @@ public class MapConfigurationValidatorImpl implements MapConfigurationValidator 
                                       .stream()
                                       .map(RangeConfiguration::type)
                                       .collect(Collectors.toSet())
-                                      .equals(new HashSet<>(validationConfiguration.rangeTypes()));
+                                      .equals(validationConfiguration.rangeTypesWithResources()
+                                                                     .stream()
+                                                                     .map(RangeWithResource::rangeType)
+                                                                     .collect(Collectors.toSet()));
     isValid = isValid && configuration.resources()
                                       .stream()
                                       .map(ResourceConfiguration::type)
                                       .collect(Collectors.toSet())
-                                      .equals(new HashSet<>(validationConfiguration.resourceTypes()));
+                                      .equals(validationConfiguration.rangeTypesWithResources()
+                                                                     .stream()
+                                                                     .flatMap(range -> range.resourceTypes().stream())
+                                                                     .collect(Collectors.toSet()));
     return isValid;
   }
   

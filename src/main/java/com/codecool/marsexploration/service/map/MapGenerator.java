@@ -10,7 +10,7 @@ import com.codecool.marsexploration.data.map.MarsMap;
 import com.codecool.marsexploration.data.utilities.Coordinate;
 import com.codecool.marsexploration.service.logger.ConsoleLogger;
 import com.codecool.marsexploration.service.logger.Logger;
-import com.codecool.marsexploration.service.map.shape.ShapeGenerator;
+import com.codecool.marsexploration.service.map.shape.ShapeProvider;
 
 import java.util.*;
 
@@ -18,10 +18,10 @@ public class MapGenerator implements MapProvider {
   private final Random RANDOM = new Random();
   private final Logger log = new ConsoleLogger();
   private MarsMap map;
-  private Map<CellType, ShapeGenerator> shapeGenerators;
+  private Map<CellType, ShapeProvider> shapeGenerators;
   private int restarts = 0;
   
-  public MapGenerator(Map<CellType, ShapeGenerator> shapeGenerators) {
+  public MapGenerator(Map<CellType, ShapeProvider> shapeGenerators) {
     this.shapeGenerators = shapeGenerators;
   }
   
@@ -33,8 +33,8 @@ public class MapGenerator implements MapProvider {
     generateShapes(configuration);
     placeResources(configuration);
     
-    log.logInfo(map.toString());
-    log.logInfo("restarts: " + restarts);
+    // log.logInfo(map.toString());
+    // log.logInfo("restarts: " + restarts);
     return map;
   }
   
@@ -61,9 +61,9 @@ public class MapGenerator implements MapProvider {
     for (Map.Entry<CellType, int[]> specificShapeSizes : shapes.entrySet()) {
       int placedShapeCounter = 0;
       int attemptsWithCurrentShapeSize = 0;
-      ShapeGenerator generator = shapeGenerators.get(specificShapeSizes.getKey());
+      ShapeProvider generator = shapeGenerators.get(specificShapeSizes.getKey());
       while (placedShapeCounter < specificShapeSizes.getValue().length) {
-        Area generatedShape = generator.generate(specificShapeSizes.getValue()[placedShapeCounter]);
+        Area generatedShape = generator.get(specificShapeSizes.getValue()[placedShapeCounter]);
         
         numberOfShapesGenerated++;
         attemptsWithCurrentShapeSize++;
@@ -79,15 +79,15 @@ public class MapGenerator implements MapProvider {
             restartGeneration(shapes, size);
           } else {
             createEmptyMap(size);
-            log.logError("Unlucky!");
+            // log.logError("Unlucky!");
             // maybe start over with newly generated shape sizes here
           }
-          log.logInfo("Breaking!");
+          // log.logInfo("Breaking!");
           break shapeGenerationLoop;
         }
       }
     }
-    log.logInfo("Shapes generated: " + numberOfShapesGenerated);
+    // log.logInfo("Shapes generated: " + numberOfShapesGenerated);
   }
   
   private void restartGeneration(HashMap<CellType, int[]> shapes, int size) {
@@ -174,7 +174,7 @@ public class MapGenerator implements MapProvider {
     for (ResourceConfiguration configuration : mapConfiguration.resources()) {
       
       int numberOfResources = configuration.numberOfElements();
-      CellType requiredNeighbor = getRequiredNeighbor(configuration.type());
+      CellType requiredNeighbor = configuration.neighbor();
       ArrayList<Coordinate> emptyCoordinates = getEmptyCells();
       
       while (numberOfResources > 0 && !emptyCoordinates.isEmpty()) {
@@ -222,19 +222,5 @@ public class MapGenerator implements MapProvider {
       }
     }
     return emptyCoordinates;
-  }
-  
-  private CellType getRequiredNeighbor(CellType type) {
-    switch (type) {
-      case MINERAL -> {
-        return CellType.MOUNTAIN;
-      }
-      case WATER -> {
-        return CellType.PIT;
-      }
-      default -> {
-        return CellType.EMPTY;
-      }
-    }
   }
 }
