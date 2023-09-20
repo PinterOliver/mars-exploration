@@ -3,10 +3,7 @@ package com.codecool.marsexploration;
 import com.codecool.marsexploration.data.cell.CellType;
 import com.codecool.marsexploration.data.config.MapValidationConfiguration;
 import com.codecool.marsexploration.data.config.RangeWithResource;
-import com.codecool.marsexploration.service.config.MapConfigurationProvider;
-import com.codecool.marsexploration.service.config.TilesCalculator;
-import com.codecool.marsexploration.service.config.TilesManager;
-import com.codecool.marsexploration.service.config.UiMapConfigurationGetter;
+import com.codecool.marsexploration.service.config.*;
 import com.codecool.marsexploration.service.filewriter.MapFileWriter;
 import com.codecool.marsexploration.service.filewriter.MapFileWriterImpl;
 import com.codecool.marsexploration.service.input.Input;
@@ -34,10 +31,11 @@ public class Application {
   private static final Logger LOGGER = new ConsoleLogger();
   private static final Scanner SCANNER = new Scanner(System.in);
   private static final Input INPUT = new InputImpl(SCANNER, LOGGER);
-  private static final List<MapConfigurationProvider> MAP_CONFIGURATION_PROVIDERS =
-          List.of(new UiMapConfigurationGetter(LOGGER, INPUT, TILES_MANAGER));
-  private static final MapFileWriter FILE_WRITER = new MapFileWriterImpl(LOGGER);
   private static final Random RANDOM = new Random();
+  private static final List<MapConfigurationProvider> MAP_CONFIGURATION_PROVIDERS =
+          List.of(new UiMapConfigurationGetter(LOGGER, INPUT, TILES_MANAGER),
+                  new MapConfigurationGenerator(TILES_MANAGER, RANDOM));
+  private static final MapFileWriter FILE_WRITER = new MapFileWriterImpl(LOGGER);
   private static final Pick PICK = new PickImpl(RANDOM);
   private static final MapValidationConfiguration VALIDATION_CONFIGURATION = new MapValidationConfiguration(0.3,
                                                                                                             10,
