@@ -12,6 +12,8 @@ import com.codecool.marsexploration.data.utilities.Coordinate;
 import com.codecool.marsexploration.service.logger.ConsoleLogger;
 import com.codecool.marsexploration.service.logger.Logger;
 import com.codecool.marsexploration.service.map.shape.ShapeProvider;
+import com.codecool.marsexploration.service.utilities.Pick;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -19,12 +21,14 @@ import java.util.stream.Collectors;
 public class MapGenerator implements MapProvider {
   private final Random RANDOM = new Random();
   private final Logger log = new ConsoleLogger();
+  private final Map<CellType, ShapeProvider> shapeGenerators;
+  private final Pick pick;
   private MarsMap map;
-  private Map<CellType, ShapeProvider> shapeGenerators;
   private int restarts = 0;
   
-  public MapGenerator(Map<CellType, ShapeProvider> shapeGenerators) {
+  public MapGenerator(Map<CellType, ShapeProvider> shapeGenerators, Pick pick) {
     this.shapeGenerators = shapeGenerators;
+    this.pick = pick;
   }
   
   @Override
@@ -186,30 +190,57 @@ public class MapGenerator implements MapProvider {
     this.map = new MarsMap(size);
   }
   
-  private void placeResources(MapConfiguration mapConfiguration) {
-    for (ResourceConfiguration configuration : mapConfiguration.resources()) {
+  private void placeResources(@NotNull MapConfiguration mapConfiguration) {
+    for (RangeWithNumbersConfiguration configuration : mapConfiguration.ranges()) {
       
-      int numberOfResources = configuration.numberOfElements();
-      CellType requiredNeighbor = configuration.neighbor();
+      int numberOfResources =
+              configuration.resourceTypes().stream().mapToInt(ResourceConfiguration::numberOfElements).sum();
+      CellType requiredNeighbor = configuration.type();
       ArrayList<Coordinate> emptyCoordinates = getEmptyCells();
       
-      while (numberOfResources > 0 && !emptyCoordinates.isEmpty()) {
-        int emptyCoordinateIndex = RANDOM.nextInt(emptyCoordinates.size());
-        Coordinate randomCoordinate = emptyCoordinates.get(emptyCoordinateIndex);
-        emptyCoordinates.remove(emptyCoordinateIndex);
-        if (isValidResourcePosition(randomCoordinate, requiredNeighbor, mapConfiguration.size())) {
-          map.setCell(randomCoordinate, configuration.type());
+      numberOfResources =
+              placePlaceHoldersNextToRanges(mapConfiguration, numberOfResources, emptyCoordinates, requiredNeighbor);
+      placePlaceHoldersNextToPlaceHolders(numberOfResources);
+      
+      replacePlaceHolderWithResourceCells(configuration);
+    }
+  }
+  
+  private int placePlaceHoldersNextToRanges(@NotNull MapConfiguration mapConfiguration, int numberOfResources,
+          ArrayList<Coordinate> emptyCoordinates, CellType requiredNeighbor) {
+    while (numberOfResources > 0 && !emptyCoordinates.isEmpty()) {
+      int emptyCoordinateIndex = RANDOM.nextInt(emptyCoordinates.size());
+      Coordinate randomCoordinate = emptyCoordinates.get(emptyCoordinateIndex);
+      emptyCoordinates.remove(emptyCoordinateIndex);
+      if (isValidResourcePosition(randomCoordinate, requiredNeighbor, mapConfiguration.size())) {
+        map.setCell(randomCoordinate, CellType.PLACEHOLDER);
+        numberOfResources--;
+      }
+    }
+    return numberOfResources;
+  }
+  
+  private void placePlaceHoldersNextToPlaceHolders(int numberOfResources) {
+    while (numberOfResources > 0) {
+      Coordinate coordinate = new Coordinate(RANDOM.nextInt(map.getHeight()), RANDOM.nextInt(map.getWidth()));
+      if (map.getCell(coordinate).getType() == CellType.EMPTY) {
+        List<Cell> neighbours = map.getNeighbours(coordinate, 1);
+        if (neighbours.stream().anyMatch(neighbour -> neighbour.getType() == CellType.PLACEHOLDER)) {
+          map.setCell(coordinate, CellType.PLACEHOLDER);
           numberOfResources--;
         }
       }
-      while (numberOfResources > 0) {
-        Coordinate coordinate = new Coordinate(RANDOM.nextInt(map.getHeight()), RANDOM.nextInt(map.getWidth()));
-        if (map.getCell(coordinate).getType() == CellType.EMPTY) {
-          List<Cell> neighbours = map.getNeighbours(coordinate, 1);
-          if (neighbours.stream().anyMatch(neighbour -> neighbour.getType() == configuration.type())) {
-            map.setCell(coordinate, configuration.type());
-            numberOfResources--;
-          }
+    }
+  }
+  
+  private void replacePlaceHolderWithResourceCells(@NotNull RangeWithNumbersConfiguration configuration) {
+    Collection<Coordinate> placeHolders = new HashSet<>(map.filterCellsByType(CellType.PLACEHOLDER));
+    for (ResourceConfiguration resourceConfiguration : configuration.resourceTypes()) {
+      for (int i = 0; i < resourceConfiguration.numberOfElements(); i++) {
+        Optional<Coordinate> cell = pick.from(placeHolders);
+        if (cell.isPresent()) {
+          map.setCell(cell.get(), resourceConfiguration.type());
+          placeHolders.remove(cell.get());
         }
       }
     }
