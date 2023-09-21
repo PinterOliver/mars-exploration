@@ -82,11 +82,12 @@ public class MarsMapUi {
   private MapConfigurationProvider selectProvider() {
     logger.logInfo("Please enter the index of your chosen map configuration provider!");
     logger.logInfo(mapConfigurationProviders.stream().map(MapConfigurationProvider::getName).toList());
-    int index = input.get(Integer::parseInt) - 1;
+    int indexOffset = 1;
+    int index = input.get(Integer::parseInt) - indexOffset;
     while (index < 0 || index >= mapConfigurationProviders.size()) {
       logger.logError("Input out of range");
       logger.logInfo("Please, enter again!");
-      index = input.get(Integer::parseInt) - 1;
+      index = input.get(Integer::parseInt) - indexOffset;
     }
     return mapConfigurationProviders.get(index);
   }

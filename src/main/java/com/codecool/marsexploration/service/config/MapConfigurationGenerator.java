@@ -39,6 +39,10 @@ public class MapConfigurationGenerator implements MapConfigurationProvider {
   @NotNull
   private Collection<RangeWithNumbersConfiguration> generateRangeConfigurations(
           @NotNull MapValidationConfiguration validationConfiguration) {
+    
+    int maximumFloor = 2;
+    int minimumAverageRangeSize = 5;
+    
     Collection<RangeWithNumbersConfiguration> rangeConfigurations = new ArrayList<>();
     
     for (RangeWithResource rangeWithResources : validationConfiguration.rangeTypesWithResources()) {
@@ -46,7 +50,10 @@ public class MapConfigurationGenerator implements MapConfigurationProvider {
       int numberOfElements = random.nextInt(tiles.getTypeElementInterval(rangeType).minimum(),
                                             tiles.getTypeElementInterval(rangeType).maximum());
       tiles.remove(rangeType, numberOfElements);
-      int numberOfRanges = random.nextInt(1, Math.max((numberOfElements / 5), 2));
+      
+      
+      int maximumNumberOfRanges = Math.max((numberOfElements / minimumAverageRangeSize), maximumFloor);
+      int numberOfRanges = random.nextInt(1, maximumNumberOfRanges);
       
       Set<CellType> resources = rangeWithResources.resourceTypes();
       Set<ResourceConfiguration> resourceConfigurations = generateResourceConfigurations(resources);
