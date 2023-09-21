@@ -86,14 +86,12 @@ public class MapGenerator implements MapProvider {
       boolean isPlaced = false;
       while (!isPlaced) {
         Area generatedShape = generator.get(shapeBlueprint.size());
-        // attemptsWithCurrentShapeSize++;
         
         if (manageShapePlacement(generatedShape, shapeBlueprint.type())) {
           isPlaced = true;
           attemptsWithCurrentShapeSize = 0;
         }
         
-        // first version of exiting conditions - more thinking needed
         if (++attemptsWithCurrentShapeSize > attemptLimit) {
           if (restarts < attemptLimit) {
             restartGeneration(shapeBlueprintList, size);
@@ -143,8 +141,8 @@ public class MapGenerator implements MapProvider {
       for (int column = 0; column < generatedShape.getWidth(); column++) {
         Coordinate currentCoordinate = new Coordinate(row, column);
         if (!(generatedShape.getCell(currentCoordinate).getType() == CellType.EMPTY) &&
-          !(map.getCell(startPoint.add(currentCoordinate)).getType() == CellType.EMPTY)) {
-            return false;
+            !(map.getCell(startPoint.add(currentCoordinate)).getType() == CellType.EMPTY)) {
+          return false;
         }
       }
     }
@@ -169,11 +167,12 @@ public class MapGenerator implements MapProvider {
     int minimumShapeSizeFactor = 2;
     int minimumShapeSize = Math.max(numberOfTiles / (numberOfShapes * minimumShapeSizeFactor), 1);
     int remainingTilesToAssign = numberOfTiles;
+    int indexOffset = 1;
     
     List<ShapeBlueprint> shapeBlueprints = new ArrayList<>();
     
-    for (int i = 0; i < numberOfShapes - 1; i++) {
-      int numberOfShapesToGenerate = numberOfShapes - 2 - i;
+    for (int i = 1; i < numberOfShapes; i++) {
+      int numberOfShapesToGenerate = numberOfShapes - indexOffset - i;
       int maximumShapeSize = remainingTilesToAssign - (numberOfShapesToGenerate * minimumShapeSize);
       int generatedSize = RANDOM.nextInt(minimumShapeSize, maximumShapeSize);
       int shapeSize = Math.min(generatedSize, maximumShapeSize - generatedSize);
@@ -192,25 +191,21 @@ public class MapGenerator implements MapProvider {
   
   private void placeResources(@NotNull MapConfiguration mapConfiguration) {
     for (RangeWithNumbersConfiguration configuration : mapConfiguration.ranges()) {
-
+      
       int numberOfResources =
               configuration.resourceTypes().stream().mapToInt(ResourceConfiguration::numberOfElements).sum();
       CellType requiredNeighbor = configuration.type();
       ArrayList<Coordinate> emptyCoordinates = new ArrayList<>(map.filterCellsByType(CellType.EMPTY));
-      // int numberOfResources = configuration.numberOfElements();
-      // CellType requiredNeighbor = configuration.neighbor();
-      // Collection<Coordinate> emptyCoordinates = new ArrayList<>(map.filterCellsByType(CellType.EMPTY));
       
-      numberOfResources =
-              placePlaceHoldersNextToRanges(mapConfiguration, numberOfResources, emptyCoordinates, requiredNeighbor);
+      numberOfResources = placePlaceHoldersNextToRanges(numberOfResources, emptyCoordinates, requiredNeighbor);
       placePlaceHoldersNextToPlaceHolders(numberOfResources);
       
       replacePlaceHolderWithResourceCells(configuration);
     }
   }
   
-  private int placePlaceHoldersNextToRanges(@NotNull MapConfiguration mapConfiguration, int numberOfResources,
-          ArrayList<Coordinate> emptyCoordinates, CellType requiredNeighbor) {
+  private int placePlaceHoldersNextToRanges(int numberOfResources, ArrayList<Coordinate> emptyCoordinates,
+          CellType requiredNeighbor) {
     while (numberOfResources > 0 && !emptyCoordinates.isEmpty()) {
       int emptyCoordinateIndex = RANDOM.nextInt(emptyCoordinates.size());
       Coordinate randomCoordinate = emptyCoordinates.get(emptyCoordinateIndex);
@@ -227,8 +222,7 @@ public class MapGenerator implements MapProvider {
     while (numberOfResources > 0) {
       Coordinate coordinate = new Coordinate(RANDOM.nextInt(map.getHeight()), RANDOM.nextInt(map.getWidth()));
       if (map.getCell(coordinate).getType() == CellType.EMPTY) {
-        List<Cell> neighbours = map.getNeighbours(coordinate, 1);
-        if (neighbours.stream().anyMatch(neighbour -> neighbour.getType() == CellType.PLACEHOLDER)) {
+        if (isValidResourcePosition(coordinate, CellType.PLACEHOLDER)) {
           map.setCell(coordinate, CellType.PLACEHOLDER);
           numberOfResources--;
         }
