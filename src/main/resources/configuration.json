@@ -1,0 +1,22 @@
+{
+  "maxFilledTilesRatio": 0.3,
+  "minimumMapSize": 10,
+  "maximumMapSize": 40,
+  "minimumClusterTypeRatio": 0.05,
+  "minimumResourceTypeRatio": 0.01,
+  "clusterTypes": [
+    {
+      "clusterType": "MOUNTAIN",
+      "resourceTypes": [
+        "MINERAL",
+        "GOLD"
+      ]
+    },
+    {
+      "clusterType": "PIT",
+      "resourceTypes": [
+        "WATER"
+      ]
+    }
+  ]
+}
