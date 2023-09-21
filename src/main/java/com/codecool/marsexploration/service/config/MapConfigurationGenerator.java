@@ -15,7 +15,7 @@ public class MapConfigurationGenerator implements MapConfigurationProvider {
   
   public MapConfigurationGenerator(TilesManager tiles, Random RANDOM) {
     this.tiles = tiles;
-    this.random = random;
+    this.random = RANDOM;
   }
   
   @Override

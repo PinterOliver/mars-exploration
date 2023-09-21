@@ -64,7 +64,7 @@ public class Application {
     MapConfigurationValidator validator = new MapConfigurationValidatorImpl();
     Map<CellType, ShapeProvider> shapeGenerators =
             Map.of(CellType.MOUNTAIN, new MountainShapeGenerator(random), CellType.PIT, new PitShapeGenerator(random));
-    MapProvider mapProvider = new MapGenerator(shapeGenerators, pick);
+    MapProvider mapProvider = new MapGenerator(shapeGenerators, random, pick, logger);
     MapManager mapManager = new MapManagerImpl(mapProvider, fileWriter);
     MarsMapUi ui = new MarsMapUi(logger,
                                  input,
