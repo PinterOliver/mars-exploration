@@ -2,8 +2,10 @@ package com.codecool.marsexploration.service.validation;
 
 import com.codecool.marsexploration.data.cell.CellType;
 import com.codecool.marsexploration.data.config.*;
+import com.codecool.marsexploration.data.config.RangeWithNumbersConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
+
 
 import java.util.List;
 import java.util.Set;
@@ -68,10 +70,11 @@ class MapConfigurationValidatorImplTest {
   
   @NotNull
   private static MapConfiguration getConfiguration(int size, int numberOfMountain, int mountainRanges, int numberOfPit, int pitRanges, int mineralAmount, int waterAmount) {
-    RangeConfiguration mountainRangeConfiguration = new RangeConfiguration(CellType.MOUNTAIN, numberOfMountain, mountainRanges);
-    RangeConfiguration pitRangeConfiguration = new RangeConfiguration(CellType.PIT, numberOfPit, pitRanges);
-    ResourceConfiguration mineralResourceConfiguration = new ResourceConfiguration(CellType.MINERAL, mineralAmount, CellType.MOUNTAIN);
-    ResourceConfiguration waterResourceConfiguration = new ResourceConfiguration(CellType.WATER, waterAmount, CellType.PIT);
-    return new MapConfiguration(size, List.of(mountainRangeConfiguration, pitRangeConfiguration), List.of(mineralResourceConfiguration, waterResourceConfiguration));
+    ResourceConfiguration mineralResourceConfiguration = new ResourceConfiguration(CellType.MINERAL, mineralAmount);
+    ResourceConfiguration waterResourceConfiguration = new ResourceConfiguration(CellType.WATER, waterAmount);
+    RangeWithNumbersConfiguration mountainRangeConfiguration = new RangeWithNumbersConfiguration(CellType.MOUNTAIN, numberOfMountain, mountainRanges, Set.of(mineralResourceConfiguration));
+    RangeWithNumbersConfiguration pitRangeConfiguration = new RangeWithNumbersConfiguration(CellType.PIT, numberOfPit, pitRanges, Set.of(waterResourceConfiguration));
+    
+    return new MapConfiguration(size, List.of(mountainRangeConfiguration, pitRangeConfiguration));
   }
 }

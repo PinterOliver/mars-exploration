@@ -26,43 +26,6 @@ import com.codecool.marsexploration.ui.MarsMapUi;
 import java.util.*;
 
 public class Application {
-  private static final String FILE_PATH_FORMAT = "src/main/resources/maps/exploration-%d.map";
-  private static final TilesManager TILES_MANAGER = new TilesCalculator();
-  private static final Random RANDOM = new Random();
-  private static final Logger LOGGER = new ConsoleLogger();
-  private static final Scanner SCANNER = new Scanner(System.in);
-  private static final Input INPUT = new InputImpl(SCANNER, LOGGER);
-  // private static final Random RANDOM = new Random();
-  private static final Pick PICK = new PickImpl(RANDOM);
-  private static final List<MapConfigurationProvider> MAP_CONFIGURATION_PROVIDERS =
-          List.of(new UiMapConfigurationGetter(LOGGER, INPUT, TILES_MANAGER),
-                  new MapConfigurationGenerator(TILES_MANAGER, RANDOM, PICK));
-  private static final MapFileWriter FILE_WRITER = new MapFileWriterImpl(LOGGER);
-  private static final MapValidationConfiguration VALIDATION_CONFIGURATION = new MapValidationConfiguration(0.3,
-                                                                                                            10,
-                                                                                                            40,
-                                                                                                            0.05,
-                                                                                                            0.01,
-                                                                                                            List.of(new RangeWithResource(
-                                                                                                                            CellType.MOUNTAIN,
-                                                                                                                            Set.of(CellType.MINERAL,
-                                                                                                                                   CellType.GOLD)),
-                                                                                                                    new RangeWithResource(
-                                                                                                                            CellType.PIT,
-                                                                                                                            Set.of(CellType.WATER))));
-  private static final MapConfigurationValidator VALIDATOR = new MapConfigurationValidatorImpl();
-  private static final Map<CellType, ShapeProvider> SHAPE_GENERATORS =
-          Map.of(CellType.MOUNTAIN, new MountainShapeGenerator(RANDOM), CellType.PIT, new PitShapeGenerator(RANDOM));
-  // private static final MapProvider MAP_PROVIDER = new MapGenerator(SHAPE_GENERATORS, PICK);
-  private static final MapProvider MAP_PROVIDER = new MapGenerator(SHAPE_GENERATORS, RANDOM, PICK, LOGGER);
-  private static final MapManager MAP_MANAGER = new MapManagerImpl(MAP_PROVIDER, FILE_WRITER);
-  private static final MarsMapUi UI = new MarsMapUi(LOGGER,
-                                                    INPUT,
-                                                    MAP_MANAGER,
-                                                    VALIDATOR,
-                                                    VALIDATION_CONFIGURATION,
-                                                    FILE_PATH_FORMAT,
-                                                    MAP_CONFIGURATION_PROVIDERS);
   private static String FILE_PATH = "src/main/resources/maps/exploration.map";
   
   public static String getFilePath() {
@@ -74,6 +37,42 @@ public class Application {
   }
   
   public static void main(String[] args) {
-    UI.run();
+    String filePathFormat = "src/main/resources/maps/exploration-%d.map";
+    Random random = new Random();
+    TilesManager tilesManager = new TilesCalculator();
+    Logger logger = new ConsoleLogger();
+    Scanner scanner = new Scanner(System.in);
+    Input input = new InputImpl(scanner, logger);
+    List<MapConfigurationProvider> mapConfigurationProviders =
+            List.of(new UiMapConfigurationGetter(logger, input, tilesManager),
+                    new MapConfigurationGenerator(tilesManager, random));
+    MapFileWriter fileWriter = new MapFileWriterImpl(logger);
+    Pick pick = new PickImpl(random);
+    MapValidationConfiguration validationConfiguration = new MapValidationConfiguration(0.3,
+                                                                                        10,
+                                                                                        40,
+                                                                                        0.05,
+                                                                                        0.01,
+                                                                                        List.of(new RangeWithResource(
+                                                                                                        CellType.MOUNTAIN,
+                                                                                                        Set.of(CellType.MINERAL,
+                                                                                                               CellType.GOLD)),
+                                                                                                new RangeWithResource(
+                                                                                                        CellType.PIT,
+                                                                                                        Set.of(CellType.WATER))));
+    // TODO: Can be more than one validationConfiguration
+    MapConfigurationValidator validator = new MapConfigurationValidatorImpl();
+    Map<CellType, ShapeProvider> shapeGenerators =
+            Map.of(CellType.MOUNTAIN, new MountainShapeGenerator(random), CellType.PIT, new PitShapeGenerator(random));
+    MapProvider mapProvider = new MapGenerator(shapeGenerators, pick);
+    MapManager mapManager = new MapManagerImpl(mapProvider, fileWriter);
+    MarsMapUi ui = new MarsMapUi(logger,
+                                 input,
+                                 mapManager,
+                                 validator,
+                                 validationConfiguration,
+                                 filePathFormat,
+                                 mapConfigurationProviders);
+    ui.run();
   }
 }

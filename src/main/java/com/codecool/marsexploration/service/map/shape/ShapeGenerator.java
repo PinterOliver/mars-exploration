@@ -9,12 +9,12 @@ import java.util.List;
 import java.util.Random;
 
 public abstract class ShapeGenerator implements ShapeProvider {
+  private static final int QUANTITY_MULTIPLY = 3;
+  private static final int SHAPE_SIDE_DIVIDE = 4;
   private final double defaultChance;
   private final double plusPerNeighbour;
   private final Random random;
   private final CellType cellType;
-  private static final int QUANTITY_MULTIPLY = 3;
-  private static final int SHAPE_SIDE_DIVIDE = 4;
   
   public ShapeGenerator(double defaultChance, double plusPerNeighbour, Random random, CellType cellType) {
     this.defaultChance = defaultChance;
