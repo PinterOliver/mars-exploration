@@ -2,15 +2,14 @@ package com.codecool.marsexploration.service.map.shape;
 
 import com.codecool.marsexploration.data.map.Area;
 import org.junit.jupiter.api.Test;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.util.Random;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ShapeGeneratorTest {
   Random random = new Random();
+  
   @Test
   void mountainGeneratorGet() {
     ShapeProvider provider = new MountainShapeGenerator(random);
@@ -21,7 +20,7 @@ class ShapeGeneratorTest {
   }
   
   @Test
-  void pitGeneratorGetTest(){
+  void pitGeneratorGetTest() {
     ShapeProvider provider = new PitShapeGenerator(random);
     int quantityExpected = 10;
     Area area = provider.get(quantityExpected);
