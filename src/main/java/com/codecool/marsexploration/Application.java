@@ -1,30 +1,34 @@
 package com.codecool.marsexploration;
 
 import com.codecool.marsexploration.data.cell.CellType;
-import com.codecool.marsexploration.data.config.Cluster;
-import com.codecool.marsexploration.data.config.MapValidationConfiguration;
 import com.codecool.marsexploration.service.config.*;
 import com.codecool.marsexploration.service.filewriter.MapFileWriter;
 import com.codecool.marsexploration.service.filewriter.MapFileWriterImpl;
-import com.codecool.marsexploration.service.input.Input;
-import com.codecool.marsexploration.service.input.InputImpl;
+import com.codecool.marsexploration.service.input.*;
 import com.codecool.marsexploration.service.logger.ConsoleLogger;
 import com.codecool.marsexploration.service.logger.Logger;
 import com.codecool.marsexploration.service.map.MapGenerator;
 import com.codecool.marsexploration.service.map.MapManager;
 import com.codecool.marsexploration.service.map.MapManagerImpl;
 import com.codecool.marsexploration.service.map.MapProvider;
+import com.codecool.marsexploration.service.map.shape.LakeShapeGenerator;
 import com.codecool.marsexploration.service.map.shape.MountainShapeGenerator;
 import com.codecool.marsexploration.service.map.shape.PitShapeGenerator;
-import com.codecool.marsexploration.service.map.shape.ShapeGeneratorImpl;
 import com.codecool.marsexploration.service.map.shape.ShapeProvider;
 import com.codecool.marsexploration.service.utilities.Pick;
 import com.codecool.marsexploration.service.utilities.PickImpl;
 import com.codecool.marsexploration.service.validation.MapConfigurationValidator;
 import com.codecool.marsexploration.service.validation.MapConfigurationValidatorImpl;
 import com.codecool.marsexploration.ui.MarsMapUi;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Unmodifiable;
 
-import java.util.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Scanner;
 
 public class Application {
   private static String FILE_PATH = "src/main/resources/maps/exploration.map";
@@ -38,44 +42,61 @@ public class Application {
   }
   
   public static void main(String[] args) {
-    String filePathFormat = "src/main/resources/maps/exploration-%d.map";
-    Random random = new Random();
-    TilesManager tilesManager = new TilesCalculator();
     Logger logger = new ConsoleLogger();
+    try {
+      MarsMapUi ui = getMarsMapUi(logger);
+      ui.run();
+    } catch (Exception e) {
+      logger.logError(e.getMessage());
+    }
+  }
+  
+  @NotNull
+  private static MarsMapUi getMarsMapUi(Logger logger) throws FileNotFoundException {
+    Random random = new Random();
+    Input input = getInput(logger);
+    String filePathFormat = "src/main/resources/maps/exploration-%d.map";
+    List<MapConfigurationProvider> configurationProviders = getConfigurationProviders(logger, input, random);
+    ConfigurationJsonParser jsonParser = getJsonParser();
+    MapConfigurationValidator validator = new MapConfigurationValidatorImpl();
+    MapManager mapManager = getManager(random, logger);
+    return new MarsMapUi(logger, input, mapManager, validator, jsonParser, filePathFormat, configurationProviders);
+  }
+  
+  @NotNull
+  private static Input getInput(Logger logger) {
     Scanner scanner = new Scanner(System.in);
-    Input input = new InputImpl(scanner, logger);
-    List<MapConfigurationProvider> mapConfigurationProviders =
-            List.of(new UiMapConfigurationGetter(logger, input, tilesManager),
-                    new MapConfigurationGenerator(tilesManager, random));
+    return new InputImpl(scanner, logger);
+  }
+  
+  @NotNull
+  private static @Unmodifiable List<MapConfigurationProvider> getConfigurationProviders(Logger logger, Input input,
+          Random random) {
+    TilesManager tilesManager = new TilesCalculator();
+    return List.of(new UiMapConfigurationGetter(logger, input, tilesManager),
+                   new MapConfigurationGenerator(tilesManager, random));
+  }
+  
+  @NotNull
+  private static ConfigurationJsonParser getJsonParser() throws FileNotFoundException {
+    String configurationFilePath = "src/main/resources/configuration.json";
+    File file = new File(configurationFilePath);
+    Scanner configurationScanner = new Scanner(file);
+    FileReader fileReader = new FileReaderImpl();
+    return new ConfigurationJsonParserImpl(configurationScanner, fileReader);
+  }
+  
+  @NotNull
+  private static MapManager getManager(Random random, Logger logger) {
     MapFileWriter fileWriter = new MapFileWriterImpl(logger);
     Pick pick = new PickImpl(random);
-    MapValidationConfiguration validationConfiguration = new MapValidationConfiguration(0.3,
-                                                                                        10,
-                                                                                        40,
-                                                                                        0.05,
-                                                                                        0.01,
-                                                                                        List.of(new Cluster(CellType.MOUNTAIN,
-                                                                                                            Set.of(CellType.MINERAL,
-                                                                                                                   CellType.GOLD)),
-                                                                                                new Cluster(CellType.PIT,
-                                                                                                            Set.of(CellType.WATER))));
-    // TODO: Can be more than one validationConfiguration
-    MapConfigurationValidator validator = new MapConfigurationValidatorImpl();
     Map<CellType, ShapeProvider> shapeGenerators = Map.of(CellType.MOUNTAIN,
                                                           new MountainShapeGenerator(random, CellType.MOUNTAIN),
                                                           CellType.PIT,
                                                           new PitShapeGenerator(random, CellType.PIT),
                                                           CellType.WATER,
-                                                          new PitShapeGenerator(random, CellType.WATER));
-    MapProvider mapProvider = new MapGenerator(shapeGenerators, random, pick, logger);
-    MapManager mapManager = new MapManagerImpl(mapProvider, fileWriter);
-    MarsMapUi ui = new MarsMapUi(logger,
-                                 input,
-                                 mapManager,
-                                 validator,
-                                 validationConfiguration,
-                                 filePathFormat,
-                                 mapConfigurationProviders);
-    ui.run();
+                                                          new LakeShapeGenerator(random, CellType.WATER));
+    MapProvider mapProvider = new MapGenerator(shapeGenerators, random, pick);
+    return new MapManagerImpl(mapProvider, fileWriter);
   }
 }
