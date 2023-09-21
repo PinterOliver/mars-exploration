@@ -4,8 +4,8 @@ import com.codecool.marsexploration.data.cell.Cell;
 import com.codecool.marsexploration.data.cell.CellType;
 import com.codecool.marsexploration.data.utilities.Coordinate;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class Area {
   protected final int height;
@@ -68,6 +68,13 @@ public class Area {
       }
     }
     return neighbours;
+  }
+  public Collection<Coordinate> filterCellsByType(CellType type) {
+    return getAllCells().stream().filter(cell -> cell.getType() == type).map(Cell::getPosition).toList();
+  }
+  
+  private Set<Cell> getAllCells() {
+    return Arrays.stream(cells).flatMap(Arrays::stream).collect(Collectors.toSet());
   }
   
   private void fillCellsWithEmptyCells() {
