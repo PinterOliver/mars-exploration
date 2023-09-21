@@ -37,8 +37,9 @@ public class MapConfigurationValidatorImpl implements MapConfigurationValidator 
                                                                      .stream()
                                                                      .map(RangeWithResource::rangeType)
                                                                      .collect(Collectors.toSet()));
-    isValid = isValid && configuration.resources()
+    isValid = isValid && configuration.ranges()
                                       .stream()
+                                      .flatMap(range -> range.resourceTypes().stream())
                                       .map(ResourceConfiguration::type)
                                       .collect(Collectors.toSet())
                                       .equals(validationConfiguration.rangeTypesWithResources()
@@ -55,8 +56,9 @@ public class MapConfigurationValidatorImpl implements MapConfigurationValidator 
                                       .stream()
                                       .map(RangeWithNumbersConfiguration::numberOfElements)
                                       .allMatch(size -> size >= minimumRangeNumber);
-    isValid = isValid && configuration.resources()
+    isValid = isValid && configuration.ranges()
                                       .stream()
+                                      .flatMap(range -> range.resourceTypes().stream())
                                       .map(ResourceConfiguration::numberOfElements)
                                       .allMatch(size -> size >= minimumResourceNumber);
     return isValid;
