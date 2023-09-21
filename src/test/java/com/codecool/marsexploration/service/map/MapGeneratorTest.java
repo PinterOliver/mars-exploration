@@ -59,6 +59,7 @@ class MapGeneratorTest {
     ClusterConfiguration pitConfiguration =
             new ClusterConfiguration(CellType.PIT, pitElementCount, pitRangeCount, Set.of(waterConfiguration));
     MapConfiguration configuration = new MapConfiguration(mapSize, List.of(pitConfiguration));
+    Map<CellType, ShapeGenerator> shapeGenerators = Map.of(CellType.PIT, new PitShapeGenerator(random, CellType.PIT));
     MarsMap map = provider.generate(configuration, shapeGenerators);
     
     System.out.println(map);
