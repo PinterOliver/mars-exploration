@@ -32,11 +32,11 @@ public class Application {
   private static final Scanner SCANNER = new Scanner(System.in);
   private static final Input INPUT = new InputImpl(SCANNER, LOGGER);
   private static final Random RANDOM = new Random();
+  private static final Pick PICK = new PickImpl(RANDOM);
   private static final List<MapConfigurationProvider> MAP_CONFIGURATION_PROVIDERS =
           List.of(new UiMapConfigurationGetter(LOGGER, INPUT, TILES_MANAGER),
-                  new MapConfigurationGenerator(TILES_MANAGER, RANDOM));
+                  new MapConfigurationGenerator(TILES_MANAGER, RANDOM, PICK));
   private static final MapFileWriter FILE_WRITER = new MapFileWriterImpl(LOGGER);
-  private static final Pick PICK = new PickImpl(RANDOM);
   private static final MapValidationConfiguration VALIDATION_CONFIGURATION = new MapValidationConfiguration(0.3,
                                                                                                             10,
                                                                                                             40,
@@ -51,7 +51,7 @@ public class Application {
   private static final MapConfigurationValidator VALIDATOR = new MapConfigurationValidatorImpl();
   private static final Map<CellType, ShapeProvider> SHAPE_GENERATORS =
           Map.of(CellType.MOUNTAIN, new MountainShapeGenerator(RANDOM), CellType.PIT, new PitShapeGenerator(RANDOM));
-  private static final MapProvider MAP_PROVIDER = new MapGenerator(SHAPE_GENERATORS);
+  private static final MapProvider MAP_PROVIDER = new MapGenerator(SHAPE_GENERATORS, RANDOM, PICK, LOGGER);
   private static final MapManager MAP_MANAGER = new MapManagerImpl(MAP_PROVIDER, FILE_WRITER);
   private static final MarsMapUi UI = new MarsMapUi(LOGGER,
                                                     INPUT,
