@@ -40,8 +40,6 @@ public class Area {
   public Cell getCell(Coordinate position) {
     int row = position.row();
     int column = position.column();
-    // System.out.println("width: " + row);
-    // System.out.println("column: " + column);
     return cells[row][column];
   }
   
@@ -61,7 +59,7 @@ public class Area {
     
     for (int i = y - radius; i <= y + radius; i++) {
       for (int j = x - radius; j <= x + radius; j++) {
-        boolean validCell = (i != y) && (j != x) && (i < height) && (j < width) && (i > 0) && (j > 0);
+        boolean validCell = ((i != y) || (j != x)) && (i < height) && (j < width) && (i > 0) && (j > 0);
         if (validCell) {
           neighbours.add(cells[i][j]);
         }
@@ -77,7 +75,7 @@ public class Area {
   private void fillCellsWithEmptyCells() {
     for (int row = 0; row < height; row++) {
       for (int column = 0; column < width; column++) {
-        cells[row][column] = new Cell(new Coordinate(row, column), CellType.EMPTY, this);
+        cells[row][column] = new Cell(new Coordinate(row, column), CellType.EMPTY);
       }
     }
   }

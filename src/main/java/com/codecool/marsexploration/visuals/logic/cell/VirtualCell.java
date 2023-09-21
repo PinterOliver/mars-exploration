@@ -22,10 +22,6 @@ public class VirtualCell implements Drawable {
     return type.getTileName();
   }
   
-  public VirtualCellType getType() {
-    return type;
-  }
-  
   public void setType(VirtualCellType type) {
     this.type = type;
   }
@@ -40,13 +36,5 @@ public class VirtualCell implements Drawable {
   
   public VirtualCell getNeighbor(int dx, int dy) {
     return gameMap.getCell(x + dx, y + dy);
-  }
-  
-  public int getX() {
-    return x;
-  }
-  
-  public int getY() {
-    return y;
   }
 }
