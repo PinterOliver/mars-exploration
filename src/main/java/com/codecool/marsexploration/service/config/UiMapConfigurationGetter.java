@@ -17,7 +17,6 @@ public class UiMapConfigurationGetter implements MapConfigurationProvider {
   private final Logger logger;
   private final Input input;
   private final TilesManager tiles;
-  private MapValidationConfiguration validationConfiguration;
   
   public UiMapConfigurationGetter(Logger logger, Input input, TilesManager tilesManager) {
     this.logger = logger;
@@ -27,13 +26,13 @@ public class UiMapConfigurationGetter implements MapConfigurationProvider {
   
   @Override
   public MapConfiguration getMapConfiguration(@NotNull MapValidationConfiguration validationConfiguration) {
-    this.validationConfiguration = validationConfiguration;
-    int size = getSize();
+    int size = getSize(validationConfiguration);
     
     tiles.startManagingTiles(size, validationConfiguration);
     logger.logInfo(String.format("The maximum number of all elements: %d", tiles.getRemainingFreeTiles()));
     
-    Collection<RangeWithNumbersConfiguration> rangeWithNumbersConfigurations = getRangeConfigurations();
+    Collection<RangeWithNumbersConfiguration> rangeWithNumbersConfigurations =
+            getRangeConfigurations(validationConfiguration);
     
     tiles.finishManagingTiles();
     return new MapConfiguration(size, rangeWithNumbersConfigurations);
@@ -44,7 +43,7 @@ public class UiMapConfigurationGetter implements MapConfigurationProvider {
     return NAME;
   }
   
-  private int getSize() {
+  private int getSize(@NotNull MapValidationConfiguration validationConfiguration) {
     return getInt(new Interval<>(validationConfiguration.minimumMapSize(), validationConfiguration.maximumMapSize()),
                   "size of the map");
   }
@@ -64,7 +63,8 @@ public class UiMapConfigurationGetter implements MapConfigurationProvider {
   }
   
   @NotNull
-  private Collection<RangeWithNumbersConfiguration> getRangeConfigurations() {
+  private Collection<RangeWithNumbersConfiguration> getRangeConfigurations(
+          @NotNull MapValidationConfiguration validationConfiguration) {
     Collection<RangeWithNumbersConfiguration> rangeWithNumbersConfigurations = new ArrayList<>();
     
     for (RangeWithResource rangeWithResources : validationConfiguration.rangeTypesWithResources()) {
