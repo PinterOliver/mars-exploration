@@ -21,6 +21,7 @@ public class Tiles {
     tileMap.put("player", new Tile(14, 20));
     tileMap.put("water", new Tile(14, 18));
     tileMap.put("mineral", new Tile(23, 4));
+    tileMap.put("gold", new Tile(16, 22));
   }
   
   public static void drawTile(GraphicsContext context, Drawable d, int x, int y) {

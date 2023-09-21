@@ -5,12 +5,9 @@ import com.codecool.marsexploration.data.config.*;
 import javafx.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
-public class MapConfigurationGenerator implements MapConfigurationProvider{
+public class MapConfigurationGenerator implements MapConfigurationProvider {
   private static final String NAME = "Automatic Map Configurator - Random";
   private final Random RANDOM;
   private final TilesManager tiles;
@@ -26,23 +23,16 @@ public class MapConfigurationGenerator implements MapConfigurationProvider{
     this.validationConfiguration = validationConfiguration;
     int mapSize = RANDOM.nextInt(validationConfiguration.minimumMapSize(), validationConfiguration.maximumMapSize());
     
-    List<CellType> ranges = getRangeTypes();
-    List<Pair<CellType, CellType>> resources = getResourceTypes();
-    List<CellType> resourceList = resources.stream().map(Pair::getKey).toList();
+    tiles.startManagingTiles(mapSize, validationConfiguration);
     
-    tiles.startManagingTiles(mapSize, validationConfiguration, ranges, resourceList);
-    
-    Collection<RangeConfiguration> rangeConfigurations = getRangeConfigurations(ranges);
-    Collection<ResourceConfiguration> resourceConfigurations = getResourceConfigurations(resources);
-    return new MapConfiguration(mapSize, rangeConfigurations, resourceConfigurations);
+    Collection<RangeWithNumbersConfiguration> rangeConfigurations = getRangeConfigurations();
+    return new MapConfiguration(mapSize, rangeConfigurations);
   }
-  
   
   @Override
   public String getName() {
     return NAME;
   }
-  
   
   @NotNull
   private List<Pair<CellType, CellType>> getResourceTypes() {
@@ -55,39 +45,37 @@ public class MapConfigurationGenerator implements MapConfigurationProvider{
   }
   
   @NotNull
-  private List<CellType> getRangeTypes() {
-    return validationConfiguration.rangeTypesWithResources().stream().map(RangeWithResource::rangeType).toList();
-  }
-  
-  @NotNull
-  private Collection<RangeConfiguration> getRangeConfigurations(@NotNull List<CellType> ranges) {
-    Collection<RangeConfiguration> rangeConfigurations = new ArrayList<>();
+  private Collection<RangeWithNumbersConfiguration> getRangeConfigurations() {
+    Collection<RangeWithNumbersConfiguration> rangeConfigurations = new ArrayList<>();
     
-    for (CellType rangeType : ranges) {
-      int numberOfElements = RANDOM.nextInt(
-              tiles.getTypeElementInterval(rangeType).minimum(),
-              tiles.getTypeElementInterval(rangeType).maximum());
+    for (RangeWithResource rangeWithResources : validationConfiguration.rangeTypesWithResources()) {
+      CellType rangeType = rangeWithResources.rangeType();
+      int numberOfElements = RANDOM.nextInt(tiles.getTypeElementInterval(rangeType).minimum(),
+                                            tiles.getTypeElementInterval(rangeType).maximum());
       tiles.remove(rangeType, numberOfElements);
       int numberOfRanges = RANDOM.nextInt(1, Math.max((numberOfElements / 5), 2));
-      rangeConfigurations.add(new RangeConfiguration(rangeType, numberOfElements, numberOfRanges));
+      
+      Set<CellType> resources = rangeWithResources.resourceTypes();
+      Set<ResourceConfiguration> resourceConfigurations = getResourceConfigurations(resources);
+      
+      rangeConfigurations.add(new RangeWithNumbersConfiguration(rangeType,
+                                                                numberOfElements,
+                                                                numberOfRanges,
+                                                                resourceConfigurations));
     }
     
     return rangeConfigurations;
   }
   
   @NotNull
-  private Collection<ResourceConfiguration> getResourceConfigurations(
-          @NotNull List<Pair<CellType, CellType>> resources) {
-    Collection<ResourceConfiguration> resourceConfigurations = new ArrayList<>();
+  private Set<ResourceConfiguration> getResourceConfigurations(@NotNull Set<CellType> resources) {
+    Set<ResourceConfiguration> resourceConfigurations = new HashSet<>();
     
-    for (Pair<CellType, CellType> resourceType : resources) {
-      int numberOfElements = RANDOM.nextInt(
-              tiles.getTypeElementInterval(resourceType.getKey()).minimum(),
-              tiles.getTypeElementInterval(resourceType.getKey()).maximum());
-      tiles.remove(resourceType.getKey(), numberOfElements);
-      resourceConfigurations.add(new ResourceConfiguration(resourceType.getKey(),
-                                                           numberOfElements,
-                                                           resourceType.getValue()));
+    for (CellType resourceType : resources) {
+      int numberOfElements = RANDOM.nextInt(tiles.getTypeElementInterval(resourceType).minimum(),
+                                            tiles.getTypeElementInterval(resourceType).maximum());
+      tiles.remove(resourceType, numberOfElements);
+      resourceConfigurations.add(new ResourceConfiguration(resourceType, numberOfElements));
     }
     
     return resourceConfigurations;
