@@ -11,7 +11,8 @@ public enum CellType {
   WATER("~"),
   ALIEN("p"),
   GOLD("g"),
-  PLACEHOLDER("h");
+  PLACEHOLDER("h"),
+  FOREST("f");
   private final String symbol;
   
   CellType(String symbol) {

@@ -31,6 +31,7 @@ public class MapLoader {
             case '~' -> virtualCell.setType(VirtualCellType.WATER);
             case '*' -> virtualCell.setType(VirtualCellType.MINERAL);
             case 'g' -> virtualCell.setType(VirtualCellType.GOLD);
+            case 'f' -> virtualCell.setType(VirtualCellType.FOREST);
             case 'p' -> {
               virtualCell.setType(VirtualCellType.EMPTY);
               map.setPlayer(new Player(virtualCell));

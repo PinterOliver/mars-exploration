@@ -16,6 +16,7 @@ import com.codecool.marsexploration.service.map.MapManagerImpl;
 import com.codecool.marsexploration.service.map.MapProvider;
 import com.codecool.marsexploration.service.map.shape.MountainShapeGenerator;
 import com.codecool.marsexploration.service.map.shape.PitShapeGenerator;
+import com.codecool.marsexploration.service.map.shape.ShapeGeneratorImpl;
 import com.codecool.marsexploration.service.map.shape.ShapeProvider;
 import com.codecool.marsexploration.service.utilities.Pick;
 import com.codecool.marsexploration.service.utilities.PickImpl;
@@ -60,8 +61,12 @@ public class Application {
                                                                                                             Set.of(CellType.WATER))));
     // TODO: Can be more than one validationConfiguration
     MapConfigurationValidator validator = new MapConfigurationValidatorImpl();
-    Map<CellType, ShapeProvider> shapeGenerators =
-            Map.of(CellType.MOUNTAIN, new MountainShapeGenerator(random), CellType.PIT, new PitShapeGenerator(random));
+    Map<CellType, ShapeProvider> shapeGenerators = Map.of(CellType.MOUNTAIN,
+                                                          new MountainShapeGenerator(random, CellType.MOUNTAIN),
+                                                          CellType.PIT,
+                                                          new PitShapeGenerator(random, CellType.PIT),
+                                                          CellType.WATER,
+                                                          new PitShapeGenerator(random, CellType.WATER));
     MapProvider mapProvider = new MapGenerator(shapeGenerators, random, pick, logger);
     MapManager mapManager = new MapManagerImpl(mapProvider, fileWriter);
     MarsMapUi ui = new MarsMapUi(logger,
