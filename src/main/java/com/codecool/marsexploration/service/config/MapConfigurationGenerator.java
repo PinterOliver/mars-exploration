@@ -2,6 +2,7 @@ package com.codecool.marsexploration.service.config;
 
 import com.codecool.marsexploration.data.cell.CellType;
 import com.codecool.marsexploration.data.config.*;
+import javafx.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -10,10 +11,11 @@ public class MapConfigurationGenerator implements MapConfigurationProvider {
   private static final String NAME = "Automatic Map Configurator - Random";
   private final Random random;
   private final TilesManager tiles;
+  private MapValidationConfiguration validationConfiguration;
   
-  public MapConfigurationGenerator(TilesManager tiles, Random random) {
+  public MapConfigurationGenerator(TilesManager tiles, Random RANDOM) {
     this.tiles = tiles;
-    this.random = random;
+    this.random = RANDOM;
   }
   
   @Override

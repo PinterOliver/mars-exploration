@@ -69,10 +69,17 @@ public class Area {
     }
     return neighbours;
   }
-  
   public Collection<Coordinate> filterCellsByType(CellType type) {
     return getAllCells().stream().filter(cell -> cell.getType() == type).map(Cell::getPosition).toList();
   }
+  
+  // private Set<Cell> getAllCells() {
+  //   return Arrays.stream(cells).flatMap(Arrays::stream).collect(Collectors.toSet());
+  // }
+  //
+  // public Collection<Coordinate> filterCellsByType(CellType type) {
+  //   return getAllCells().stream().filter(cell -> cell.getType() == type).map(Cell::getPosition).toList();
+  // }
   
   private void fillCellsWithEmptyCells() {
     for (int row = 0; row < height; row++) {
