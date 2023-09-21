@@ -31,7 +31,7 @@ public class MapConfigurationValidatorImpl implements MapConfigurationValidator 
   private boolean areCellTypeListsValid(@NotNull MapConfiguration configuration, boolean isValid) {
     isValid = isValid && configuration.ranges()
                                       .stream()
-                                      .map(RangeConfiguration::type)
+                                      .map(RangeWithNumbersConfiguration::type)
                                       .collect(Collectors.toSet())
                                       .equals(validationConfiguration.rangeTypesWithResources()
                                                                      .stream()
@@ -53,7 +53,7 @@ public class MapConfigurationValidatorImpl implements MapConfigurationValidator 
     int minimumResourceNumber = (int) (configuration.size() * validationConfiguration.minimumResourceTypeRatio());
     isValid = isValid && configuration.ranges()
                                       .stream()
-                                      .map(RangeConfiguration::numberOfElements)
+                                      .map(RangeWithNumbersConfiguration::numberOfElements)
                                       .allMatch(size -> size >= minimumRangeNumber);
     isValid = isValid && configuration.resources()
                                       .stream()

@@ -3,7 +3,7 @@ package com.codecool.marsexploration.service.map;
 import com.codecool.marsexploration.data.cell.Cell;
 import com.codecool.marsexploration.data.cell.CellType;
 import com.codecool.marsexploration.data.config.MapConfiguration;
-import com.codecool.marsexploration.data.config.RangeConfiguration;
+import com.codecool.marsexploration.data.config.RangeWithNumbersConfiguration;
 import com.codecool.marsexploration.data.config.ResourceConfiguration;
 import com.codecool.marsexploration.data.map.Area;
 import com.codecool.marsexploration.data.map.MarsMap;
@@ -48,20 +48,21 @@ public class MapGenerator implements MapProvider {
   }
   
   private void generateShapes(MapConfiguration configuration) {
-    List<ShapeBlueprint> shapeBlueprints = generateShapeConfigurations(
-            configuration.ranges()).stream()
-                                   .sorted(Comparator.comparingInt(ShapeBlueprint::size).reversed())
-                                   .collect(Collectors.toList());
+    List<ShapeBlueprint> shapeBlueprints = generateShapeConfigurations(configuration.ranges()).stream()
+                                                                                              .sorted(Comparator.comparingInt(
+                                                                                                                        ShapeBlueprint::size)
+                                                                                                                .reversed())
+                                                                                              .collect(Collectors.toList());
     
     shapeBlueprints.forEach(System.out::println);
     
     createShapes(shapeBlueprints, configuration.size());
   }
   
-  private List<ShapeBlueprint> generateShapeConfigurations(Collection<RangeConfiguration> configuration) {
+  private List<ShapeBlueprint> generateShapeConfigurations(Collection<RangeWithNumbersConfiguration> configuration) {
     List<ShapeBlueprint> shapeBlueprintList = new ArrayList<>();
     
-    for (RangeConfiguration rangeConfig : configuration) {
+    for (RangeWithNumbersConfiguration rangeConfig : configuration) {
       shapeBlueprintList.addAll(generateShapeSizes(rangeConfig.numberOfRanges(),
                                                    rangeConfig.numberOfElements(),
                                                    rangeConfig.type()));

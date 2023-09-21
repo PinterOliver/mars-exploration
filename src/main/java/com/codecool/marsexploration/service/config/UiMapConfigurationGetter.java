@@ -37,10 +37,10 @@ public class UiMapConfigurationGetter implements MapConfigurationProvider {
     tiles.startManagingTiles(size, validationConfiguration, ranges, resourceList);
     logger.logInfo(String.format("The maximum number of all elements: %d", tiles.getRemainingFreeTiles()));
     
-    Collection<RangeConfiguration> rangeConfigurations = getRangeConfigurations(ranges);
+    Collection<RangeWithNumbersConfiguration> rangeWithNumbersConfigurations = getRangeConfigurations(ranges);
     Collection<ResourceConfiguration> resourceConfigurations = getResourceConfigurations(resources);
     
-    return new MapConfiguration(size, rangeConfigurations, resourceConfigurations);
+    return new MapConfiguration(size, rangeWithNumbersConfigurations, resourceConfigurations);
   }
   
   @Override
@@ -86,8 +86,8 @@ public class UiMapConfigurationGetter implements MapConfigurationProvider {
   }
   
   @NotNull
-  private Collection<RangeConfiguration> getRangeConfigurations(@NotNull List<CellType> ranges) {
-    Collection<RangeConfiguration> rangeConfigurations = new ArrayList<>();
+  private Collection<RangeWithNumbersConfiguration> getRangeConfigurations(@NotNull List<CellType> ranges) {
+    Collection<RangeWithNumbersConfiguration> rangeWithNumbersConfigurations = new ArrayList<>();
     
     for (CellType rangeType : ranges) {
       int numberOfElements =
@@ -95,10 +95,12 @@ public class UiMapConfigurationGetter implements MapConfigurationProvider {
       tiles.remove(rangeType, numberOfElements);
       int numberOfRanges =
               getInt(new Interval<>(1, numberOfElements), String.format("number of %sranges", rangeType.getName()));
-      rangeConfigurations.add(new RangeConfiguration(rangeType, numberOfElements, numberOfRanges));
+      rangeWithNumbersConfigurations.add(new RangeWithNumbersConfiguration(rangeType,
+                                                                           numberOfElements,
+                                                                           numberOfRanges));
     }
     
-    return rangeConfigurations;
+    return rangeWithNumbersConfigurations;
   }
   
   private int getInt(@NotNull Interval<Integer> interval, String message) {

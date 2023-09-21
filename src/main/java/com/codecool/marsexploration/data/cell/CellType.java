@@ -9,7 +9,8 @@ public enum CellType {
   PIT("#"),
   MINERAL("*"),
   WATER("~"),
-  ALIEN("p");
+  ALIEN("p"),
+  GOLD("g");
   
   private final String symbol;
   
