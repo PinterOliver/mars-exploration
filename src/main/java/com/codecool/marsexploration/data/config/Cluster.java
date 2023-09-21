@@ -4,5 +4,5 @@ import com.codecool.marsexploration.data.cell.CellType;
 
 import java.util.Set;
 
-public record RangeWithResource(CellType rangeType, Set<CellType> resourceTypes) {
+public record Cluster(CellType clusterType, Set<CellType> resourceTypes) {
 }

@@ -18,47 +18,49 @@ public class MapConfigurationValidatorImpl implements MapConfigurationValidator 
     isValid = isFilledTilesRatioValid(configuration, isValid);
     isValid = areCellTypeListsValid(configuration, isValid);
     isValid = areNumberOfEachCellTypeValid(configuration, isValid);
-    isValid = areNumberOfRangesValid(configuration, isValid);
+    isValid = areNumberOfClustersValid(configuration, isValid);
     return isValid;
   }
   
-  private boolean areNumberOfRangesValid(MapConfiguration configuration, boolean isValid) {
-    isValid = isValid &&
-              configuration.ranges().stream().allMatch(range -> range.numberOfElements() >= range.numberOfRanges());
+  private boolean areNumberOfClustersValid(MapConfiguration configuration, boolean isValid) {
+    isValid = isValid && configuration.clusters()
+                                      .stream()
+                                      .allMatch(cluster -> cluster.numberOfElements() >= cluster.numberOfClusters());
     return isValid;
   }
   
   private boolean areCellTypeListsValid(@NotNull MapConfiguration configuration, boolean isValid) {
-    isValid = isValid && configuration.ranges()
+    isValid = isValid && configuration.clusters()
                                       .stream()
-                                      .map(RangeWithNumbersConfiguration::type)
+                                      .map(ClusterConfiguration::clusterType)
                                       .collect(Collectors.toSet())
-                                      .equals(validationConfiguration.rangeTypesWithResources()
+                                      .equals(validationConfiguration.clusterTypes()
                                                                      .stream()
-                                                                     .map(RangeWithResource::rangeType)
+                                                                     .map(Cluster::clusterType)
                                                                      .collect(Collectors.toSet()));
-    isValid = isValid && configuration.ranges()
+    isValid = isValid && configuration.clusters()
                                       .stream()
-                                      .flatMap(range -> range.resourceTypes().stream())
-                                      .map(ResourceConfiguration::type)
+                                      .flatMap(cluster -> cluster.resourceTypes().stream())
+                                      .map(ResourceConfiguration::resourceType)
                                       .collect(Collectors.toSet())
-                                      .equals(validationConfiguration.rangeTypesWithResources()
+                                      .equals(validationConfiguration.clusterTypes()
                                                                      .stream()
-                                                                     .flatMap(range -> range.resourceTypes().stream())
+                                                                     .flatMap(cluster -> cluster.resourceTypes()
+                                                                                                .stream())
                                                                      .collect(Collectors.toSet()));
     return isValid;
   }
   
   private boolean areNumberOfEachCellTypeValid(@NotNull MapConfiguration configuration, boolean isValid) {
-    int minimumRangeNumber = (int) (configuration.size() * validationConfiguration.minimumRangeTypeRatio());
+    int minimumClusterNumber = (int) (configuration.size() * validationConfiguration.minimumClusterTypeRatio());
     int minimumResourceNumber = (int) (configuration.size() * validationConfiguration.minimumResourceTypeRatio());
-    isValid = isValid && configuration.ranges()
+    isValid = isValid && configuration.clusters()
                                       .stream()
-                                      .map(RangeWithNumbersConfiguration::numberOfElements)
-                                      .allMatch(size -> size >= minimumRangeNumber);
-    isValid = isValid && configuration.ranges()
+                                      .map(ClusterConfiguration::numberOfElements)
+                                      .allMatch(size -> size >= minimumClusterNumber);
+    isValid = isValid && configuration.clusters()
                                       .stream()
-                                      .flatMap(range -> range.resourceTypes().stream())
+                                      .flatMap(cluster -> cluster.resourceTypes().stream())
                                       .map(ResourceConfiguration::numberOfElements)
                                       .allMatch(size -> size >= minimumResourceNumber);
     return isValid;

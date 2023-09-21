@@ -2,8 +2,8 @@ package com.codecool.marsexploration.service.map;
 
 import com.codecool.marsexploration.data.cell.Cell;
 import com.codecool.marsexploration.data.cell.CellType;
+import com.codecool.marsexploration.data.config.ClusterConfiguration;
 import com.codecool.marsexploration.data.config.MapConfiguration;
-import com.codecool.marsexploration.data.config.RangeWithNumbersConfiguration;
 import com.codecool.marsexploration.data.config.ResourceConfiguration;
 import com.codecool.marsexploration.data.map.Area;
 import com.codecool.marsexploration.data.map.MarsMap;
@@ -18,17 +18,17 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class MapGenerator implements MapProvider {
-  private final Random RANDOM;
-  private final Pick PICK;
+  private final Random random;
+  private final Pick pick;
   private final Logger log;
-  private MarsMap map;
   private final Map<CellType, ShapeProvider> shapeGenerators;
+  private MarsMap map;
   private int restarts = 0;
   
-  public MapGenerator(Map<CellType, ShapeProvider> shapeGenerators, Random RANDOM, Pick PICK, Logger log) {
+  public MapGenerator(Map<CellType, ShapeProvider> shapeGenerators, Random random, Pick pick, Logger log) {
     this.shapeGenerators = new HashMap<>(shapeGenerators);
-    this.RANDOM = RANDOM;
-    this.PICK = PICK;
+    this.random = random;
+    this.pick = pick;
     this.log = log;
   }
   
@@ -49,29 +49,29 @@ public class MapGenerator implements MapProvider {
   private void placeAlien() {
     Collection<Coordinate> emptyCoordinates = new ArrayList<>(map.filterCellsByType(CellType.EMPTY));
     
-    Optional<Coordinate> randomCoordinate = PICK.from(emptyCoordinates);
+    Optional<Coordinate> randomCoordinate = pick.from(emptyCoordinates);
     randomCoordinate.ifPresent(coordinate -> map.setCell(coordinate, CellType.ALIEN));
   }
   
   private void generateShapes(MapConfiguration configuration) {
-    List<ShapeBlueprint> shapeBlueprints = generateShapeConfigurations(configuration.ranges()).stream()
-                                                                                              .sorted(Comparator.comparingInt(
-                                                                                                                        ShapeBlueprint::size)
-                                                                                                                .reversed())
-                                                                                              .collect(Collectors.toList());
+    List<ShapeBlueprint> shapeBlueprints = generateShapeConfigurations(configuration.clusters()).stream()
+                                                                                                .sorted(Comparator.comparingInt(
+                                                                                                                          ShapeBlueprint::size)
+                                                                                                                  .reversed())
+                                                                                                .collect(Collectors.toList());
     
-    shapeBlueprints.forEach(System.out::println);
+    // shapeBlueprints.forEach(System.out::println);
     
     createShapes(shapeBlueprints, configuration.size());
   }
   
-  private List<ShapeBlueprint> generateShapeConfigurations(Collection<RangeWithNumbersConfiguration> configuration) {
+  private List<ShapeBlueprint> generateShapeConfigurations(Collection<ClusterConfiguration> configuration) {
     List<ShapeBlueprint> shapeBlueprintList = new ArrayList<>();
     
-    for (RangeWithNumbersConfiguration rangeConfig : configuration) {
-      shapeBlueprintList.addAll(generateShapeSizes(rangeConfig.numberOfRanges(),
-                                                   rangeConfig.numberOfElements(),
-                                                   rangeConfig.type()));
+    for (ClusterConfiguration clusterConfiguration : configuration) {
+      shapeBlueprintList.addAll(generateShapeSizes(clusterConfiguration.numberOfClusters(),
+                                                   clusterConfiguration.numberOfElements(),
+                                                   clusterConfiguration.clusterType()));
     }
     return shapeBlueprintList;
   }
@@ -114,7 +114,7 @@ public class MapGenerator implements MapProvider {
     List<Coordinate> possibleStartPoints = generatePossibleStartPoints(generatedShape);
     
     while (!possibleStartPoints.isEmpty()) {
-      int startPointIndex = RANDOM.nextInt(possibleStartPoints.size());
+      int startPointIndex = random.nextInt(possibleStartPoints.size());
       Coordinate startPoint = possibleStartPoints.get(startPointIndex);
       if (validateShapePlacement(startPoint, generatedShape)) {
         placeShape(startPoint, generatedShape, type);
@@ -174,7 +174,7 @@ public class MapGenerator implements MapProvider {
     for (int i = 1; i < numberOfShapes; i++) {
       int numberOfShapesToGenerate = numberOfShapes - indexOffset - i;
       int maximumShapeSize = remainingTilesToAssign - (numberOfShapesToGenerate * minimumShapeSize);
-      int generatedSize = RANDOM.nextInt(minimumShapeSize, maximumShapeSize);
+      int generatedSize = random.nextInt(minimumShapeSize, maximumShapeSize);
       int shapeSize = Math.min(generatedSize, maximumShapeSize - generatedSize);
       
       shapeBlueprints.add(new ShapeBlueprint(type, shapeSize));
@@ -190,37 +190,39 @@ public class MapGenerator implements MapProvider {
   }
   
   private void placeResources(@NotNull MapConfiguration mapConfiguration) {
-    for (RangeWithNumbersConfiguration configuration : mapConfiguration.ranges()) {
+    for (ClusterConfiguration configuration : mapConfiguration.clusters()) {
       
       int numberOfResources =
               configuration.resourceTypes().stream().mapToInt(ResourceConfiguration::numberOfElements).sum();
-      CellType requiredNeighbor = configuration.type();
+      CellType requiredNeighbor = configuration.clusterType();
       ArrayList<Coordinate> emptyCoordinates = new ArrayList<>(map.filterCellsByType(CellType.EMPTY));
       
-      numberOfResources = placePlaceHoldersNextToRanges(numberOfResources, emptyCoordinates, requiredNeighbor);
-      placePlaceHoldersNextToPlaceHolders(numberOfResources);
+      numberOfResources = placeResourcePlaceholdersNextToCluster(numberOfResources, emptyCoordinates, requiredNeighbor);
+      placeResourcePlaceholdersNextToResourcePlaceHolders(numberOfResources);
       
       replacePlaceHolderWithResourceCells(configuration);
     }
   }
   
-  private int placePlaceHoldersNextToRanges(int numberOfResources, ArrayList<Coordinate> emptyCoordinates,
+  private int placeResourcePlaceholdersNextToCluster(int numberOfResources, ArrayList<Coordinate> emptyCoordinates,
           CellType requiredNeighbor) {
     while (numberOfResources > 0 && !emptyCoordinates.isEmpty()) {
-      int emptyCoordinateIndex = RANDOM.nextInt(emptyCoordinates.size());
-      Coordinate randomCoordinate = emptyCoordinates.get(emptyCoordinateIndex);
-      emptyCoordinates.remove(emptyCoordinateIndex);
-      if (isValidResourcePosition(randomCoordinate, requiredNeighbor)) {
-        map.setCell(randomCoordinate, CellType.PLACEHOLDER);
-        numberOfResources--;
+      Optional<Coordinate> optionalCoordinate = pick.from(emptyCoordinates);
+      if (optionalCoordinate.isPresent()) {
+        Coordinate coordinate = optionalCoordinate.get();
+        emptyCoordinates.remove(coordinate);
+        if (isValidResourcePosition(coordinate, requiredNeighbor)) {
+          map.setCell(coordinate, CellType.PLACEHOLDER);
+          numberOfResources--;
+        }
       }
     }
     return numberOfResources;
   }
   
-  private void placePlaceHoldersNextToPlaceHolders(int numberOfResources) {
+  private void placeResourcePlaceholdersNextToResourcePlaceHolders(int numberOfResources) {
     while (numberOfResources > 0) {
-      Coordinate coordinate = new Coordinate(RANDOM.nextInt(map.getHeight()), RANDOM.nextInt(map.getWidth()));
+      Coordinate coordinate = new Coordinate(random.nextInt(map.getHeight()), random.nextInt(map.getWidth()));
       if (map.getCell(coordinate).getType() == CellType.EMPTY) {
         if (isValidResourcePosition(coordinate, CellType.PLACEHOLDER)) {
           map.setCell(coordinate, CellType.PLACEHOLDER);
@@ -230,13 +232,13 @@ public class MapGenerator implements MapProvider {
     }
   }
   
-  private void replacePlaceHolderWithResourceCells(@NotNull RangeWithNumbersConfiguration configuration) {
+  private void replacePlaceHolderWithResourceCells(@NotNull ClusterConfiguration configuration) {
     Collection<Coordinate> placeHolders = new HashSet<>(map.filterCellsByType(CellType.PLACEHOLDER));
     for (ResourceConfiguration resourceConfiguration : configuration.resourceTypes()) {
       for (int i = 0; i < resourceConfiguration.numberOfElements(); i++) {
-        Optional<Coordinate> cell = PICK.from(placeHolders);
+        Optional<Coordinate> cell = pick.from(placeHolders);
         if (cell.isPresent()) {
-          map.setCell(cell.get(), resourceConfiguration.type());
+          map.setCell(cell.get(), resourceConfiguration.resourceType());
           placeHolders.remove(cell.get());
         }
       }

@@ -59,12 +59,9 @@ public class MarsMapUi {
   
   private boolean checkWhetherValidationConfigurationIsValid() {
     return validationConfiguration.maxFilledTilesRatio() >
-           validationConfiguration.minimumRangeTypeRatio() * validationConfiguration.rangeTypesWithResources().size() +
-           validationConfiguration.minimumResourceTypeRatio() * validationConfiguration.rangeTypesWithResources()
-                                                                                       .stream()
-                                                                                       .mapToLong(range -> range.resourceTypes()
-                                                                                                                .size())
-                                                                                       .sum();
+           validationConfiguration.minimumClusterTypeRatio() * validationConfiguration.clusterTypes().size() +
+           validationConfiguration.minimumResourceTypeRatio() *
+           validationConfiguration.clusterTypes().stream().mapToLong(cluster -> cluster.resourceTypes().size()).sum();
   }
   
   @NotNull

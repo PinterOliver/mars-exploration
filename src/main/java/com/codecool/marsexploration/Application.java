@@ -1,8 +1,8 @@
 package com.codecool.marsexploration;
 
 import com.codecool.marsexploration.data.cell.CellType;
+import com.codecool.marsexploration.data.config.Cluster;
 import com.codecool.marsexploration.data.config.MapValidationConfiguration;
-import com.codecool.marsexploration.data.config.RangeWithResource;
 import com.codecool.marsexploration.service.config.*;
 import com.codecool.marsexploration.service.filewriter.MapFileWriter;
 import com.codecool.marsexploration.service.filewriter.MapFileWriterImpl;
@@ -53,13 +53,11 @@ public class Application {
                                                                                         40,
                                                                                         0.05,
                                                                                         0.01,
-                                                                                        List.of(new RangeWithResource(
-                                                                                                        CellType.MOUNTAIN,
-                                                                                                        Set.of(CellType.MINERAL,
-                                                                                                               CellType.GOLD)),
-                                                                                                new RangeWithResource(
-                                                                                                        CellType.PIT,
-                                                                                                        Set.of(CellType.WATER))));
+                                                                                        List.of(new Cluster(CellType.MOUNTAIN,
+                                                                                                            Set.of(CellType.MINERAL,
+                                                                                                                   CellType.GOLD)),
+                                                                                                new Cluster(CellType.PIT,
+                                                                                                            Set.of(CellType.WATER))));
     // TODO: Can be more than one validationConfiguration
     MapConfigurationValidator validator = new MapConfigurationValidatorImpl();
     Map<CellType, ShapeProvider> shapeGenerators =

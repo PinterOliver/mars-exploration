@@ -31,11 +31,10 @@ public class UiMapConfigurationGetter implements MapConfigurationProvider {
     tiles.startManagingTiles(size, validationConfiguration);
     logger.logInfo(String.format("The maximum number of all elements: %d", tiles.getRemainingFreeTiles()));
     
-    Collection<RangeWithNumbersConfiguration> rangeWithNumbersConfigurations =
-            getRangeConfigurations(validationConfiguration);
+    Collection<ClusterConfiguration> clusterConfigurations = getClusterConfigurations(validationConfiguration);
     
     tiles.finishManagingTiles();
-    return new MapConfiguration(size, rangeWithNumbersConfigurations);
+    return new MapConfiguration(size, clusterConfigurations);
   }
   
   @Override
@@ -63,28 +62,28 @@ public class UiMapConfigurationGetter implements MapConfigurationProvider {
   }
   
   @NotNull
-  private Collection<RangeWithNumbersConfiguration> getRangeConfigurations(
+  private Collection<ClusterConfiguration> getClusterConfigurations(
           @NotNull MapValidationConfiguration validationConfiguration) {
-    Collection<RangeWithNumbersConfiguration> rangeWithNumbersConfigurations = new ArrayList<>();
+    Collection<ClusterConfiguration> clusterConfigurations = new ArrayList<>();
     
-    for (RangeWithResource rangeWithResources : validationConfiguration.rangeTypesWithResources()) {
-      CellType rangeType = rangeWithResources.rangeType();
+    for (Cluster cluster : validationConfiguration.clusterTypes()) {
+      CellType clusterType = cluster.clusterType();
       int numberOfElements =
-              getInt(tiles.getTypeElementInterval(rangeType), String.format("number of %ss", rangeType.getName()));
-      tiles.remove(rangeType, numberOfElements);
-      int numberOfRanges =
-              getInt(new Interval<>(1, numberOfElements), String.format("number of %sranges", rangeType.getName()));
+              getInt(tiles.getTypeElementInterval(clusterType), String.format("number of %ss", clusterType.getName()));
+      tiles.remove(clusterType, numberOfElements);
+      int numberOfClusters =
+              getInt(new Interval<>(1, numberOfElements), String.format("number of %sclusters", clusterType.getName()));
       
-      Set<CellType> resources = rangeWithResources.resourceTypes();
+      Set<CellType> resources = cluster.resourceTypes();
       Set<ResourceConfiguration> resourceConfigurations = getResourceConfigurations(resources);
       
-      rangeWithNumbersConfigurations.add(new RangeWithNumbersConfiguration(rangeType,
-                                                                           numberOfElements,
-                                                                           numberOfRanges,
-                                                                           resourceConfigurations));
+      clusterConfigurations.add(new ClusterConfiguration(clusterType,
+                                                         numberOfElements,
+                                                         numberOfClusters,
+                                                         resourceConfigurations));
     }
     
-    return rangeWithNumbersConfigurations;
+    return clusterConfigurations;
   }
   
   private int getInt(@NotNull Interval<Integer> interval, String message) {

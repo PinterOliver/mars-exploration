@@ -69,6 +69,7 @@ public class Area {
     }
     return neighbours;
   }
+  
   public Collection<Coordinate> filterCellsByType(CellType type) {
     return getAllCells().stream().filter(cell -> cell.getType() == type).map(Cell::getPosition).toList();
   }

@@ -2,7 +2,6 @@ package com.codecool.marsexploration.service.config;
 
 import com.codecool.marsexploration.data.cell.CellType;
 import com.codecool.marsexploration.data.config.*;
-import javafx.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -24,11 +23,10 @@ public class MapConfigurationGenerator implements MapConfigurationProvider {
     
     tiles.startManagingTiles(mapSize, validationConfiguration);
     
-    Collection<RangeWithNumbersConfiguration> rangeConfigurations =
-            generateRangeConfigurations(validationConfiguration);
+    Collection<ClusterConfiguration> clusterConfigurations = generateClusterConfigurations(validationConfiguration);
     
     tiles.finishManagingTiles();
-    return new MapConfiguration(mapSize, rangeConfigurations);
+    return new MapConfiguration(mapSize, clusterConfigurations);
   }
   
   @Override
@@ -37,34 +35,33 @@ public class MapConfigurationGenerator implements MapConfigurationProvider {
   }
   
   @NotNull
-  private Collection<RangeWithNumbersConfiguration> generateRangeConfigurations(
+  private Collection<ClusterConfiguration> generateClusterConfigurations(
           @NotNull MapValidationConfiguration validationConfiguration) {
     
     int maximumFloor = 2;
-    int minimumAverageRangeSize = 5;
+    int minimumAverageClusterSize = 5;
     
-    Collection<RangeWithNumbersConfiguration> rangeConfigurations = new ArrayList<>();
+    Collection<ClusterConfiguration> clusterConfigurations = new ArrayList<>();
     
-    for (RangeWithResource rangeWithResources : validationConfiguration.rangeTypesWithResources()) {
-      CellType rangeType = rangeWithResources.rangeType();
-      int numberOfElements = random.nextInt(tiles.getTypeElementInterval(rangeType).minimum(),
-                                            tiles.getTypeElementInterval(rangeType).maximum());
-      tiles.remove(rangeType, numberOfElements);
+    for (Cluster cluster : validationConfiguration.clusterTypes()) {
+      CellType clusterType = cluster.clusterType();
+      int numberOfElements = random.nextInt(tiles.getTypeElementInterval(clusterType).minimum(),
+                                            tiles.getTypeElementInterval(clusterType).maximum());
+      tiles.remove(clusterType, numberOfElements);
       
+      int maximumNumberOfClusters = Math.max((numberOfElements / minimumAverageClusterSize), maximumFloor);
+      int numberOfClusters = random.nextInt(1, maximumNumberOfClusters);
       
-      int maximumNumberOfRanges = Math.max((numberOfElements / minimumAverageRangeSize), maximumFloor);
-      int numberOfRanges = random.nextInt(1, maximumNumberOfRanges);
-      
-      Set<CellType> resources = rangeWithResources.resourceTypes();
+      Set<CellType> resources = cluster.resourceTypes();
       Set<ResourceConfiguration> resourceConfigurations = generateResourceConfigurations(resources);
       
-      rangeConfigurations.add(new RangeWithNumbersConfiguration(rangeType,
-                                                                numberOfElements,
-                                                                numberOfRanges,
-                                                                resourceConfigurations));
+      clusterConfigurations.add(new ClusterConfiguration(clusterType,
+                                                         numberOfElements,
+                                                         numberOfClusters,
+                                                         resourceConfigurations));
     }
     
-    return rangeConfigurations;
+    return clusterConfigurations;
   }
   
   @NotNull

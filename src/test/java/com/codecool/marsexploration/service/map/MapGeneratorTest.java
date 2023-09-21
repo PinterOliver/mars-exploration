@@ -1,8 +1,8 @@
 package com.codecool.marsexploration.service.map;
 
 import com.codecool.marsexploration.data.cell.CellType;
+import com.codecool.marsexploration.data.config.ClusterConfiguration;
 import com.codecool.marsexploration.data.config.MapConfiguration;
-import com.codecool.marsexploration.data.config.RangeWithNumbersConfiguration;
 import com.codecool.marsexploration.data.config.ResourceConfiguration;
 import com.codecool.marsexploration.data.map.MarsMap;
 import com.codecool.marsexploration.service.logger.ConsoleLogger;
@@ -13,12 +13,13 @@ import com.codecool.marsexploration.service.map.shape.ShapeProvider;
 import com.codecool.marsexploration.service.utilities.Pick;
 import com.codecool.marsexploration.service.utilities.PickImpl;
 import org.junit.jupiter.api.Test;
-import static org.mockito.Mockito.mock;
 
-import java.lang.module.Configuration;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MapGeneratorTest {
   Random random = new Random();
@@ -26,6 +27,7 @@ class MapGeneratorTest {
   Pick pick = new PickImpl(random);
   Map<CellType, ShapeProvider> shapeGenerators =
           Map.of(CellType.MOUNTAIN, new MountainShapeGenerator(random), CellType.PIT, new PitShapeGenerator(random));
+  
   @Test
   void generateTestWithEnoughPlaceForWater() {
     MapProvider provider = new MapGenerator(shapeGenerators, random, pick, logger);
@@ -34,7 +36,8 @@ class MapGeneratorTest {
     int pitRangeCount = 6;
     int mapSize = 10;
     ResourceConfiguration waterConfiguration = new ResourceConfiguration(CellType.WATER, waterElementCount);
-    RangeWithNumbersConfiguration pitConfiguration = new RangeWithNumbersConfiguration(CellType.PIT, pitElementCount, pitRangeCount, Set.of(waterConfiguration));
+    ClusterConfiguration pitConfiguration =
+            new ClusterConfiguration(CellType.PIT, pitElementCount, pitRangeCount, Set.of(waterConfiguration));
     MapConfiguration configuration = new MapConfiguration(mapSize, List.of(pitConfiguration));
     MarsMap map = provider.generate(configuration);
     
@@ -45,14 +48,15 @@ class MapGeneratorTest {
   }
   
   @Test
-  void generateTestWithoutEnoughPlaceForWater(){
+  void generateTestWithoutEnoughPlaceForWater() {
     MapProvider provider = new MapGenerator(shapeGenerators, random, pick, logger);
     int waterElementCount = 60;
     int pitElementCount = 60;
     int pitRangeCount = 1;
     int mapSize = 20;
     ResourceConfiguration waterConfiguration = new ResourceConfiguration(CellType.WATER, waterElementCount);
-    RangeWithNumbersConfiguration pitConfiguration = new RangeWithNumbersConfiguration(CellType.PIT, pitElementCount, pitRangeCount, Set.of(waterConfiguration));
+    ClusterConfiguration pitConfiguration =
+            new ClusterConfiguration(CellType.PIT, pitElementCount, pitRangeCount, Set.of(waterConfiguration));
     MapConfiguration configuration = new MapConfiguration(mapSize, List.of(pitConfiguration));
     MarsMap map = provider.generate(configuration);
     
@@ -62,12 +66,12 @@ class MapGeneratorTest {
     assertTrue(checkLengthAndWith(map, mapSize));
   }
   
-  private boolean checkElementCount(String c, int expected, MarsMap map){
+  private boolean checkElementCount(String c, int expected, MarsMap map) {
     int amount = map.toString().length() - map.toString().replace(c, "").length();
     return expected == amount;
   }
   
-  private boolean checkLengthAndWith(MarsMap map, int expected){
+  private boolean checkLengthAndWith(MarsMap map, int expected) {
     String[] rows = map.toString().split("\n");
     return rows.length - 1 == expected && rows[1].length() == expected;
   }
