@@ -9,22 +9,26 @@ import com.codecool.marsexploration.data.map.Area;
 import com.codecool.marsexploration.data.map.MarsMap;
 import com.codecool.marsexploration.data.map.ShapeBlueprint;
 import com.codecool.marsexploration.data.utilities.Coordinate;
-import com.codecool.marsexploration.service.logger.ConsoleLogger;
 import com.codecool.marsexploration.service.logger.Logger;
 import com.codecool.marsexploration.service.map.shape.ShapeProvider;
+import com.codecool.marsexploration.service.utilities.Pick;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class MapGenerator implements MapProvider {
-  private final Random RANDOM = new Random();
-  private final Logger log = new ConsoleLogger();
+  private final Random RANDOM;
+  private final Pick PICK;
+  private final Logger log;
   private MarsMap map;
-  private Map<CellType, ShapeProvider> shapeGenerators;
+  private final Map<CellType, ShapeProvider> shapeGenerators;
   private int restarts = 0;
   
-  public MapGenerator(Map<CellType, ShapeProvider> shapeGenerators) {
-    this.shapeGenerators = shapeGenerators;
+  public MapGenerator(Map<CellType, ShapeProvider> shapeGenerators, Random RANDOM, Pick PICK, Logger log) {
+    this.shapeGenerators = new HashMap<>(shapeGenerators);
+    this.RANDOM = RANDOM;
+    this.PICK = PICK;
+    this.log = log;
   }
   
   @Override
@@ -36,25 +40,26 @@ public class MapGenerator implements MapProvider {
     placeResources(configuration);
     placeAlien();
     
-    log.logInfo(map.toString());
+    // log.logInfo(map.toString());
     // log.logInfo("restarts: " + restarts);
     return map;
   }
   
   private void placeAlien() {
-    ArrayList<Coordinate> emptyCoordinates = getEmptyCells();
-    int randomIndex = RANDOM.nextInt(emptyCoordinates.size());
-    map.setCell(emptyCoordinates.get(randomIndex), CellType.ALIEN);
+    Collection<Coordinate> emptyCoordinates = new ArrayList<>(map.filterCellsByType(CellType.EMPTY));
+    
+    Optional<Coordinate> randomCoordinate = PICK.from(emptyCoordinates);
+    randomCoordinate.ifPresent(coordinate -> map.setCell(coordinate, CellType.ALIEN));
   }
   
   private void generateShapes(MapConfiguration configuration) {
-    List<ShapeBlueprint> shapeBlueprints = generateShapeConfigurations(
-            configuration.ranges()).stream()
-                                   .sorted(Comparator.comparingInt(ShapeBlueprint::size).reversed())
-                                   .collect(Collectors.toList());
+    List<ShapeBlueprint> shapeBlueprints =
+            generateShapeConfigurations(configuration.ranges()).stream()
+                                                               .sorted(Comparator.comparingInt(ShapeBlueprint::size)
+                                                               .reversed())
+                                                               .collect(Collectors.toList());
     
-    shapeBlueprints.forEach(System.out::println);
-    
+    // shapeBlueprints.forEach(System.out::println);
     createShapes(shapeBlueprints, configuration.size());
   }
   
@@ -79,16 +84,15 @@ public class MapGenerator implements MapProvider {
       boolean isPlaced = false;
       while (!isPlaced) {
         Area generatedShape = generator.get(shapeBlueprint.size());
+        // attemptsWithCurrentShapeSize++;
         
-        attemptsWithCurrentShapeSize++;
-        
-        if (isSuccessfulShapePlacement(generatedShape, shapeBlueprint.type())) {
+        if (manageShapePlacement(generatedShape, shapeBlueprint.type())) {
           isPlaced = true;
           attemptsWithCurrentShapeSize = 0;
         }
         
         // first version of exiting conditions - more thinking needed
-        if (attemptsWithCurrentShapeSize >= attemptLimit) {
+        if (++attemptsWithCurrentShapeSize > attemptLimit) {
           if (restarts < attemptLimit) {
             restartGeneration(shapeBlueprintList, size);
           } else {
@@ -106,7 +110,7 @@ public class MapGenerator implements MapProvider {
     createShapes(shapes, size);
   }
   
-  private boolean isSuccessfulShapePlacement(Area generatedShape, CellType type) {
+  private boolean manageShapePlacement(Area generatedShape, CellType type) {
     List<Coordinate> possibleStartPoints = generatePossibleStartPoints(generatedShape);
     
     while (!possibleStartPoints.isEmpty()) {
@@ -124,8 +128,9 @@ public class MapGenerator implements MapProvider {
   private void placeShape(Coordinate startPoint, Area generatedShape, CellType type) {
     for (int row = 0; row < generatedShape.getHeight(); row++) {
       for (int column = 0; column < generatedShape.getWidth(); column++) {
-        if (generatedShape.getCell(new Coordinate(row, column)).getType().equals(type)) {
-          map.setCell(new Coordinate(row + startPoint.row(), column + startPoint.column()), type);
+        Coordinate cuurentCoordinate = new Coordinate(row, column);
+        if (generatedShape.getCell(cuurentCoordinate).getType() == type) {
+          map.setCell(startPoint.add(cuurentCoordinate), type);
         }
       }
     }
@@ -134,12 +139,10 @@ public class MapGenerator implements MapProvider {
   private boolean validateShapePlacement(Coordinate startPoint, Area generatedShape) {
     for (int row = 0; row < generatedShape.getHeight(); row++) {
       for (int column = 0; column < generatedShape.getWidth(); column++) {
-        if (!generatedShape.getCell(new Coordinate(row, column)).getType().equals(CellType.EMPTY)) {
-          if (!map.getCell(new Coordinate(row + startPoint.row(), column + startPoint.column()))
-                  .getType()
-                  .equals(CellType.EMPTY)) {
+        Coordinate currentCoordinate = new Coordinate(row, column);
+        if (!(generatedShape.getCell(currentCoordinate).getType() == CellType.EMPTY) &&
+          !(map.getCell(startPoint.add(currentCoordinate)).getType() == CellType.EMPTY)) {
             return false;
-          }
         }
       }
     }
@@ -190,22 +193,26 @@ public class MapGenerator implements MapProvider {
       
       int numberOfResources = configuration.numberOfElements();
       CellType requiredNeighbor = configuration.neighbor();
-      ArrayList<Coordinate> emptyCoordinates = getEmptyCells();
+      Collection<Coordinate> emptyCoordinates = new ArrayList<>(map.filterCellsByType(CellType.EMPTY));
       
       while (numberOfResources > 0 && !emptyCoordinates.isEmpty()) {
-        int emptyCoordinateIndex = RANDOM.nextInt(emptyCoordinates.size());
-        Coordinate randomCoordinate = emptyCoordinates.get(emptyCoordinateIndex);
-        emptyCoordinates.remove(emptyCoordinateIndex);
-        if (isValidResourcePosition(randomCoordinate, requiredNeighbor, mapConfiguration.size())) {
-          map.setCell(randomCoordinate, configuration.type());
-          numberOfResources--;
+        Optional<Coordinate> selectedOptional = PICK.from(emptyCoordinates);
+        
+        if (selectedOptional.isPresent()) {
+          Coordinate selectedCoordinate = selectedOptional.get();
+          emptyCoordinates.remove(selectedCoordinate);
+          
+          if (isValidResourcePosition(selectedCoordinate, requiredNeighbor)) {
+            map.setCell(selectedCoordinate, configuration.type());
+            numberOfResources--;
+          }
         }
       }
+      
       while (numberOfResources > 0) {
         Coordinate coordinate = new Coordinate(RANDOM.nextInt(map.getHeight()), RANDOM.nextInt(map.getWidth()));
         if (map.getCell(coordinate).getType() == CellType.EMPTY) {
-          List<Cell> neighbours = map.getNeighbours(coordinate, 1);
-          if (neighbours.stream().anyMatch(neighbour -> neighbour.getType() == configuration.type())) {
+          if (isValidResourcePosition(coordinate, configuration.type())){
             map.setCell(coordinate, configuration.type());
             numberOfResources--;
           }
@@ -214,28 +221,8 @@ public class MapGenerator implements MapProvider {
     }
   }
   
-  private boolean isValidResourcePosition(Coordinate randomCoordinate, CellType requiredNeighbor, int size) {
-    
+  private boolean isValidResourcePosition(Coordinate randomCoordinate, CellType requiredNeighbor) {
     Collection<Cell> neighborCells = map.getNeighbours(randomCoordinate, 1);
-    
-    for (Cell option : neighborCells) {
-      if (option.getType().equals(requiredNeighbor)) {
-        return true;
-      }
-    }
-    return false;
-  }
-  
-  private ArrayList<Coordinate> getEmptyCells() {
-    ArrayList<Coordinate> emptyCoordinates = new ArrayList<>();
-    
-    for (int row = 0; row < map.getHeight(); row++) {
-      for (int column = 0; column < map.getWidth(); column++) {
-        if (map.getCell(new Coordinate(row, column)).getType().equals(CellType.EMPTY)) {
-          emptyCoordinates.add(new Coordinate(row, column));
-        }
-      }
-    }
-    return emptyCoordinates;
+    return neighborCells.stream().anyMatch(cell -> cell.getType() == requiredNeighbor);
   }
 }
