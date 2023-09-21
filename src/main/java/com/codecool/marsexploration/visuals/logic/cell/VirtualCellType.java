@@ -6,7 +6,8 @@ public enum VirtualCellType {
   MINERAL("mineral"),
   PIT("pit"),
   WATER("water"),
-  MOUNTAIN("mountain");
+  MOUNTAIN("mountain"),
+  GOLD("gold");
   private final String tileName;
   
   VirtualCellType(String tileName) {

@@ -5,12 +5,12 @@ import com.codecool.marsexploration.data.config.*;
 import com.codecool.marsexploration.data.utilities.Interval;
 import com.codecool.marsexploration.service.input.Input;
 import com.codecool.marsexploration.service.logger.Logger;
-import javafx.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 public class UiMapConfigurationGetter implements MapConfigurationProvider {
   private static final String NAME = "Manual Map Configurator";
@@ -30,17 +30,12 @@ public class UiMapConfigurationGetter implements MapConfigurationProvider {
     this.validationConfiguration = validationConfiguration;
     int size = getSize();
     
-    List<CellType> ranges = getRangeTypes();
-    List<Pair<CellType, CellType>> resources = getResourceTypes();
-    List<CellType> resourceList = resources.stream().map(Pair::getKey).toList();
-    
-    tiles.startManagingTiles(size, validationConfiguration, ranges, resourceList);
+    tiles.startManagingTiles(size, validationConfiguration);
     logger.logInfo(String.format("The maximum number of all elements: %d", tiles.getRemainingFreeTiles()));
     
-    Collection<RangeConfiguration> rangeConfigurations = getRangeConfigurations(ranges);
-    Collection<ResourceConfiguration> resourceConfigurations = getResourceConfigurations(resources);
+    Collection<RangeWithNumbersConfiguration> rangeWithNumbersConfigurations = getRangeConfigurations();
     
-    return new MapConfiguration(size, rangeConfigurations, resourceConfigurations);
+    return new MapConfiguration(size, rangeWithNumbersConfigurations);
   }
   
   @Override
@@ -54,51 +49,41 @@ public class UiMapConfigurationGetter implements MapConfigurationProvider {
   }
   
   @NotNull
-  private List<Pair<CellType, CellType>> getResourceTypes() {
-    return validationConfiguration.rangeTypesWithResources()
-                                  .stream()
-                                  .flatMap(range -> range.resourceTypes()
-                                                         .stream()
-                                                         .map(resource -> new Pair<>(resource, range.rangeType())))
-                                  .toList();
-  }
-  
-  @NotNull
-  private List<CellType> getRangeTypes() {
-    return validationConfiguration.rangeTypesWithResources().stream().map(RangeWithResource::rangeType).toList();
-  }
-  
-  @NotNull
-  private Collection<ResourceConfiguration> getResourceConfigurations(
-          @NotNull List<Pair<CellType, CellType>> resources) {
-    Collection<ResourceConfiguration> resourceConfigurations = new ArrayList<>();
+  private Set<ResourceConfiguration> getResourceConfigurations(@NotNull Set<CellType> resources) {
+    Set<ResourceConfiguration> resourceConfigurations = new HashSet<>();
     
-    for (Pair<CellType, CellType> resourceType : resources) {
-      int numberOfElements = getInt(tiles.getTypeElementInterval(resourceType.getKey()),
-                                    String.format("number of %ss", resourceType.getKey().getName()));
-      tiles.remove(resourceType.getKey(), numberOfElements);
-      resourceConfigurations.add(new ResourceConfiguration(resourceType.getKey(),
-                                                           numberOfElements,
-                                                           resourceType.getValue()));
+    for (CellType resourceType : resources) {
+      int numberOfElements = getInt(tiles.getTypeElementInterval(resourceType),
+                                    String.format("number of %ss", resourceType.getName()));
+      tiles.remove(resourceType, numberOfElements);
+      resourceConfigurations.add(new ResourceConfiguration(resourceType, numberOfElements));
     }
     
     return resourceConfigurations;
   }
   
   @NotNull
-  private Collection<RangeConfiguration> getRangeConfigurations(@NotNull List<CellType> ranges) {
-    Collection<RangeConfiguration> rangeConfigurations = new ArrayList<>();
+  private Collection<RangeWithNumbersConfiguration> getRangeConfigurations() {
+    Collection<RangeWithNumbersConfiguration> rangeWithNumbersConfigurations = new ArrayList<>();
     
-    for (CellType rangeType : ranges) {
+    for (RangeWithResource rangeWithResources : validationConfiguration.rangeTypesWithResources()) {
+      CellType rangeType = rangeWithResources.rangeType();
       int numberOfElements =
               getInt(tiles.getTypeElementInterval(rangeType), String.format("number of %ss", rangeType.getName()));
       tiles.remove(rangeType, numberOfElements);
       int numberOfRanges =
               getInt(new Interval<>(1, numberOfElements), String.format("number of %sranges", rangeType.getName()));
-      rangeConfigurations.add(new RangeConfiguration(rangeType, numberOfElements, numberOfRanges));
+      
+      Set<CellType> resources = rangeWithResources.resourceTypes();
+      Set<ResourceConfiguration> resourceConfigurations = getResourceConfigurations(resources);
+      
+      rangeWithNumbersConfigurations.add(new RangeWithNumbersConfiguration(rangeType,
+                                                                           numberOfElements,
+                                                                           numberOfRanges,
+                                                                           resourceConfigurations));
     }
     
-    return rangeConfigurations;
+    return rangeWithNumbersConfigurations;
   }
   
   private int getInt(@NotNull Interval<Integer> interval, String message) {

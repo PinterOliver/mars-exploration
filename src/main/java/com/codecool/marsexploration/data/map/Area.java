@@ -77,11 +77,19 @@ public class Area {
     return Arrays.stream(cells).flatMap(Arrays::stream).collect(Collectors.toSet());
   }
   
+  public Collection<Coordinate> filterCellsByType(CellType type) {
+    return getAllCells().stream().filter(cell -> cell.getType() == type).map(Cell::getPosition).toList();
+  }
+  
   private void fillCellsWithEmptyCells() {
     for (int row = 0; row < height; row++) {
       for (int column = 0; column < width; column++) {
         cells[row][column] = new Cell(new Coordinate(row, column), CellType.EMPTY, this);
       }
     }
+  }
+  
+  private Set<Cell> getAllCells() {
+    return Arrays.stream(cells).flatMap(Arrays::stream).collect(Collectors.toSet());
   }
 }

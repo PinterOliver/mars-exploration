@@ -2,11 +2,13 @@ package com.codecool.marsexploration.service.config;
 
 import com.codecool.marsexploration.data.cell.CellType;
 import com.codecool.marsexploration.data.config.MapValidationConfiguration;
+import com.codecool.marsexploration.data.config.RangeWithResource;
 import com.codecool.marsexploration.data.utilities.Interval;
+import javafx.util.Pair;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 
 public class TilesCalculator implements TilesManager {
   private int remainingFreeTiles;
@@ -16,16 +18,15 @@ public class TilesCalculator implements TilesManager {
   private Collection<CellType> resourceTypes;
   
   @Override
-  public void startManagingTiles(int size, @NotNull MapValidationConfiguration validationConfiguration,
-          Collection<CellType> rangeTypes, Collection<CellType> resourceTypes) {
+  public void startManagingTiles(int size, @NotNull MapValidationConfiguration validationConfiguration) {
     int mapSize = (int) Math.pow(size, 2);
+    
+    setRangeTypes(validationConfiguration);
+    setResourceTypes(validationConfiguration);
     
     remainingFreeTiles = (int) (mapSize * validationConfiguration.maxFilledTilesRatio());
     minimumRangeNumber = (int) (mapSize * validationConfiguration.minimumRangeTypeRatio());
     minimumResourceNumber = (int) (mapSize * validationConfiguration.minimumResourceTypeRatio());
-    
-    this.rangeTypes = new HashSet<>(rangeTypes);
-    this.resourceTypes = new HashSet<>(resourceTypes);
   }
   
   @Override
@@ -51,6 +52,24 @@ public class TilesCalculator implements TilesManager {
       return true;
     }
     return false;
+  }
+  
+  private void setResourceTypes(@NotNull MapValidationConfiguration validationConfiguration) {
+    resourceTypes = new ArrayList<>(validationConfiguration.rangeTypesWithResources()
+                                                           .stream()
+                                                           .flatMap(range -> range.resourceTypes()
+                                                                                  .stream()
+                                                                                  .map(resource -> new Pair<>(resource,
+                                                                                                              range.rangeType())))
+                                                           .map(Pair::getKey)
+                                                           .toList());
+  }
+  
+  private void setRangeTypes(@NotNull MapValidationConfiguration validationConfiguration) {
+    rangeTypes = new ArrayList<>(validationConfiguration.rangeTypesWithResources()
+                                                        .stream()
+                                                        .map(RangeWithResource::rangeType)
+                                                        .toList());
   }
   
   private @NotNull Interval<Integer> getRangeInterval() {

@@ -13,6 +13,8 @@ public abstract class ShapeGenerator implements ShapeProvider {
   private final double plusPerNeighbour;
   private final Random random;
   private final CellType cellType;
+  private static final int QUANTITY_MULTIPLY = 3;
+  private static final int SHAPE_SIDE_DIVIDE = 4;
   
   public ShapeGenerator(double defaultChance, double plusPerNeighbour, Random random, CellType cellType) {
     this.defaultChance = defaultChance;
@@ -23,10 +25,10 @@ public abstract class ShapeGenerator implements ShapeProvider {
   
   @Override
   public Area get(int quantity) {
-    double a = Math.sqrt(quantity * 3);
-    double plusMinus = random.nextDouble(-a / 4, a / 4);
-    int width = (int) (a + plusMinus);
-    int height = (int) (a - plusMinus);
+    double averageShapeSide = Math.sqrt(quantity * QUANTITY_MULTIPLY);
+    double plusMinus = random.nextDouble(-averageShapeSide / SHAPE_SIDE_DIVIDE, averageShapeSide / SHAPE_SIDE_DIVIDE);
+    int width = (int) (averageShapeSide + plusMinus);
+    int height = (int) (averageShapeSide - plusMinus);
     Area generatedArea = new Area(height, width);
     
     placeCells(generatedArea, quantity);
@@ -42,8 +44,8 @@ public abstract class ShapeGenerator implements ShapeProvider {
       Coordinate randomCoordinate = new Coordinate(random.nextInt(height), random.nextInt(width));
       if (area.getCell(randomCoordinate).getType() == CellType.EMPTY) {
         List<Cell> neighbours = area.getNeighbours(randomCoordinate, 1);
-        boolean generate = generateChance(neighbours);
-        if (generate) {
+        boolean generatedChanceResult = generateChance(neighbours);
+        if (generatedChanceResult) {
           area.setCell(randomCoordinate, cellType);
           generatedCount++;
         }
