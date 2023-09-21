@@ -1,6 +1,8 @@
 package com.codecool.marsexploration.ui;
 
 import com.codecool.marsexploration.Application;
+import com.codecool.marsexploration.data.cell.CellType;
+import com.codecool.marsexploration.data.config.ClusterConfiguration;
 import com.codecool.marsexploration.data.config.MapConfiguration;
 import com.codecool.marsexploration.data.config.MapValidationConfiguration;
 import com.codecool.marsexploration.service.config.MapConfigurationProvider;
@@ -8,12 +10,15 @@ import com.codecool.marsexploration.service.input.ConfigurationJsonParser;
 import com.codecool.marsexploration.service.input.Input;
 import com.codecool.marsexploration.service.logger.Logger;
 import com.codecool.marsexploration.service.map.MapManager;
+import com.codecool.marsexploration.service.map.shape.ShapeGenerator;
+import com.codecool.marsexploration.service.map.shape.ShapeGeneratorFactory;
+import com.codecool.marsexploration.service.map.shape.ShapeProvider;
 import com.codecool.marsexploration.service.validation.MapConfigurationValidator;
 import com.codecool.marsexploration.visuals.Main;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.util.List;
+import java.util.*;
 
 public class MarsMapUi {
   private final Logger logger;
@@ -23,10 +28,11 @@ public class MarsMapUi {
   private final MapValidationConfiguration validationConfiguration;
   private final String filePathFormat;
   private final List<MapConfigurationProvider> mapConfigurationProviders;
+  private final ShapeGeneratorFactory shapeGeneratorFactory;
   
   public MarsMapUi(Logger logger, Input input, MapManager mapManager, MapConfigurationValidator validator,
           ConfigurationJsonParser jsonParser, String filePathFormat,
-          List<MapConfigurationProvider> mapConfigurationProviders) {
+          List<MapConfigurationProvider> mapConfigurationProviders, ShapeGeneratorFactory shapeGeneratorFactory) {
     this.logger = logger;
     this.input = input;
     this.manager = mapManager;
@@ -34,6 +40,7 @@ public class MarsMapUi {
     this.validationConfiguration = jsonParser.get();
     this.filePathFormat = filePathFormat;
     this.mapConfigurationProviders = mapConfigurationProviders;
+    this.shapeGeneratorFactory = shapeGeneratorFactory;
   }
   
   public void run() {
@@ -50,12 +57,22 @@ public class MarsMapUi {
   private void runMapGeneration() {
     if (checkWhetherValidationConfigurationIsValid()) {
       MapConfiguration configuration = getMapConfiguration();
+      Map<CellType, ShapeGenerator> shapeGenerators = getShapeGenerators(configuration.clusters());
       String filePath = getFilePath();
       Application.setFilePath(filePath);
-      manager.createMap(configuration, filePath);
+      manager.createMap(configuration, filePath, shapeGenerators);
     } else {
       logger.logError("Validation configuration is invalid!");
     }
+  }
+  
+  private Map<CellType, ShapeGenerator> getShapeGenerators(Collection<ClusterConfiguration> clusters) {
+    Map<CellType, ShapeGenerator> shapeGenerators = new HashMap<>();
+    for (ClusterConfiguration cluster : clusters) {
+      ShapeGenerator shapeGenerator = shapeGeneratorFactory.getShapeGenerator(cluster.clusterType());
+      shapeGenerators.put(cluster.clusterType(), shapeGenerator);
+    }
+    return shapeGenerators;
   }
   
   private boolean checkWhetherValidationConfigurationIsValid() {
