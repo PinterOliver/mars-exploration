@@ -11,8 +11,7 @@ import com.codecool.marsexploration.service.input.Input;
 import com.codecool.marsexploration.service.logger.Logger;
 import com.codecool.marsexploration.service.map.MapManager;
 import com.codecool.marsexploration.service.map.shape.ShapeGenerator;
-import com.codecool.marsexploration.service.map.shape.ShapeGeneratorFactory;
-import com.codecool.marsexploration.service.map.shape.ShapeProvider;
+import com.codecool.marsexploration.service.map.shape.ShapeGeneratorProvider;
 import com.codecool.marsexploration.service.validation.MapConfigurationValidator;
 import com.codecool.marsexploration.visuals.Main;
 import org.jetbrains.annotations.NotNull;
@@ -28,11 +27,11 @@ public class MarsMapUi {
   private final MapValidationConfiguration validationConfiguration;
   private final String filePathFormat;
   private final List<MapConfigurationProvider> mapConfigurationProviders;
-  private final ShapeGeneratorFactory shapeGeneratorFactory;
+  private final ShapeGeneratorProvider shapeGeneratorFactory;
   
   public MarsMapUi(Logger logger, Input input, MapManager mapManager, MapConfigurationValidator validator,
           ConfigurationJsonParser jsonParser, String filePathFormat,
-          List<MapConfigurationProvider> mapConfigurationProviders, ShapeGeneratorFactory shapeGeneratorFactory) {
+          List<MapConfigurationProvider> mapConfigurationProviders, ShapeGeneratorProvider shapeGeneratorFactory) {
     this.logger = logger;
     this.input = input;
     this.manager = mapManager;

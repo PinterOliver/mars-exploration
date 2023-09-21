@@ -57,7 +57,7 @@ public class Application {
     ConfigurationJsonParser jsonParser = getJsonParser();
     MapConfigurationValidator validator = new MapConfigurationValidatorImpl();
     MapManager mapManager = getManager(random, logger);
-    ShapeGeneratorFactory shapeGeneratorFactory = new ShapeGeneratorFactory(random);
+    ShapeGeneratorProvider shapeGeneratorFactory = new ShapeGeneratorProvider(random);
     return new MarsMapUi(logger, input, mapManager, validator, jsonParser, filePathFormat, configurationProviders, shapeGeneratorFactory);
   }
   

@@ -6,7 +6,7 @@ import com.codecool.marsexploration.data.map.ShapeGeneratorBlueprint;
 import java.util.Map;
 import java.util.Random;
 
-public class ShapeGeneratorFactory {
+public class ShapeGeneratorProvider {
   private final Random RANDOM;
   private static final double DEFAULT_CHANCE = 0.1;
   private static final double PLUS_PER_NEIGHBOR = 0.1;
@@ -14,7 +14,7 @@ public class ShapeGeneratorFactory {
           CellType.MOUNTAIN, new ShapeGeneratorBlueprint(CellType.MOUNTAIN,0.1, 0.1),
           CellType.PIT, new ShapeGeneratorBlueprint(CellType.PIT,0.1, 0.05),
           CellType.WATER, new ShapeGeneratorBlueprint(CellType.WATER,0, 0.125));
-  public ShapeGeneratorFactory(Random random) {
+  public ShapeGeneratorProvider(Random random) {
     this.RANDOM = random;
   }
   public ShapeGenerator getShapeGenerator(CellType type, double defaultChance, double plusPerNeighbour){
