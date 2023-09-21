@@ -3,16 +3,16 @@ package com.codecool.marsexploration.service.map;
 import com.codecool.marsexploration.data.cell.Cell;
 import com.codecool.marsexploration.data.cell.CellType;
 import com.codecool.marsexploration.data.config.MapConfiguration;
-import com.codecool.marsexploration.data.config.RangeConfiguration;
+import com.codecool.marsexploration.data.config.RangeWithNumbersConfiguration;
 import com.codecool.marsexploration.data.config.ResourceConfiguration;
 import com.codecool.marsexploration.data.map.Area;
 import com.codecool.marsexploration.data.map.MarsMap;
 import com.codecool.marsexploration.data.map.ShapeBlueprint;
 import com.codecool.marsexploration.data.utilities.Coordinate;
-import com.codecool.marsexploration.service.logger.ConsoleLogger;
 import com.codecool.marsexploration.service.logger.Logger;
 import com.codecool.marsexploration.service.map.shape.ShapeProvider;
 import com.codecool.marsexploration.service.utilities.Pick;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -65,10 +65,10 @@ public class MapGenerator implements MapProvider {
     createShapes(shapeBlueprints, configuration.size());
   }
   
-  private List<ShapeBlueprint> generateShapeConfigurations(Collection<RangeConfiguration> configuration) {
+  private List<ShapeBlueprint> generateShapeConfigurations(Collection<RangeWithNumbersConfiguration> configuration) {
     List<ShapeBlueprint> shapeBlueprintList = new ArrayList<>();
     
-    for (RangeConfiguration rangeConfig : configuration) {
+    for (RangeWithNumbersConfiguration rangeConfig : configuration) {
       shapeBlueprintList.addAll(generateShapeSizes(rangeConfig.numberOfRanges(),
                                                    rangeConfig.numberOfElements(),
                                                    rangeConfig.type()));
@@ -192,14 +192,14 @@ public class MapGenerator implements MapProvider {
   
   private void placeResources(@NotNull MapConfiguration mapConfiguration) {
     for (RangeWithNumbersConfiguration configuration : mapConfiguration.ranges()) {
-      //
-      // int numberOfResources =
-      //         configuration.resourceTypes().stream().mapToInt(ResourceConfiguration::numberOfElements).sum();
-      // CellType requiredNeighbor = configuration.type();
-      // ArrayList<Coordinate> emptyCoordinates = getEmptyCells();
-      int numberOfResources = configuration.numberOfElements();
-      CellType requiredNeighbor = configuration.neighbor();
-      Collection<Coordinate> emptyCoordinates = new ArrayList<>(map.filterCellsByType(CellType.EMPTY));
+
+      int numberOfResources =
+              configuration.resourceTypes().stream().mapToInt(ResourceConfiguration::numberOfElements).sum();
+      CellType requiredNeighbor = configuration.type();
+      ArrayList<Coordinate> emptyCoordinates = new ArrayList<>(map.filterCellsByType(CellType.EMPTY));
+      // int numberOfResources = configuration.numberOfElements();
+      // CellType requiredNeighbor = configuration.neighbor();
+      // Collection<Coordinate> emptyCoordinates = new ArrayList<>(map.filterCellsByType(CellType.EMPTY));
       
       numberOfResources =
               placePlaceHoldersNextToRanges(mapConfiguration, numberOfResources, emptyCoordinates, requiredNeighbor);
@@ -215,7 +215,7 @@ public class MapGenerator implements MapProvider {
       int emptyCoordinateIndex = RANDOM.nextInt(emptyCoordinates.size());
       Coordinate randomCoordinate = emptyCoordinates.get(emptyCoordinateIndex);
       emptyCoordinates.remove(emptyCoordinateIndex);
-      if (isValidResourcePosition(randomCoordinate, requiredNeighbor, mapConfiguration.size())) {
+      if (isValidResourcePosition(randomCoordinate, requiredNeighbor)) {
         map.setCell(randomCoordinate, CellType.PLACEHOLDER);
         numberOfResources--;
       }
