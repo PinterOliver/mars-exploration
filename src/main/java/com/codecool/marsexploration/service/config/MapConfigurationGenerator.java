@@ -52,7 +52,8 @@ public class MapConfigurationGenerator implements MapConfigurationProvider {
       int numberOfClusters = random.nextInt(1, maximumNumberOfClusters);
       
       Set<CellType> resources = cluster.resourceTypes();
-      Set<ResourceConfiguration> resourceConfigurations = generateResourceConfigurations(resources);
+      Set<ResourceConfiguration> resourceConfigurations =
+              generateResourceConfigurations(resources, numberOfElements, validationConfiguration);
       
       clusterConfigurations.add(new ClusterConfiguration(clusterType,
                                                          numberOfElements,
@@ -64,12 +65,17 @@ public class MapConfigurationGenerator implements MapConfigurationProvider {
   }
   
   @NotNull
-  private Set<ResourceConfiguration> generateResourceConfigurations(@NotNull Set<CellType> resources) {
+  private Set<ResourceConfiguration> generateResourceConfigurations(@NotNull Set<CellType> resources,
+          int numberOfClusterElements, MapValidationConfiguration validationConfiguration) {
+    double resourceFactor =
+            validationConfiguration.minimumResourceTypeRatio() / validationConfiguration.minimumClusterTypeRatio();
+    
     Set<ResourceConfiguration> resourceConfigurations = new HashSet<>();
     
     for (CellType resourceType : resources) {
       int numberOfElements = random.nextInt(tiles.getTypeElementInterval(resourceType).minimum(),
-                                            tiles.getTypeElementInterval(resourceType).maximum());
+                                            (int) Math.min(tiles.getTypeElementInterval(resourceType).maximum(),
+                                                           numberOfClusterElements * resourceFactor + 1));
       tiles.remove(resourceType, numberOfElements);
       resourceConfigurations.add(new ResourceConfiguration(resourceType, numberOfElements));
     }
