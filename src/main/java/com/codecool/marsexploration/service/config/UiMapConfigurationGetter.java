@@ -35,6 +35,7 @@ public class UiMapConfigurationGetter implements MapConfigurationProvider {
     
     Collection<RangeWithNumbersConfiguration> rangeWithNumbersConfigurations = getRangeConfigurations();
     
+    tiles.finishManagingTiles();
     return new MapConfiguration(size, rangeWithNumbersConfigurations);
   }
   

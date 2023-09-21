@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 
 public interface TilesManager {
   void startManagingTiles(int size, @NotNull MapValidationConfiguration validationConfiguration);
+  void finishManagingTiles();
   int getRemainingFreeTiles();
   Interval<Integer> getTypeElementInterval(CellType type);
   boolean remove(CellType type, int numberOfElements);

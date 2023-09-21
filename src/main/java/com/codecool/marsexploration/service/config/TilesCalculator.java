@@ -30,6 +30,15 @@ public class TilesCalculator implements TilesManager {
   }
   
   @Override
+  public void finishManagingTiles() {
+    remainingFreeTiles = 0;
+    minimumRangeNumber = 0;
+    minimumResourceNumber = 0;
+    rangeTypes = null;
+    resourceTypes = null;
+  }
+  
+  @Override
   public int getRemainingFreeTiles() {
     return remainingFreeTiles;
   }
