@@ -4,7 +4,6 @@ import com.codecool.marsexploration.data.cell.CellType;
 import com.codecool.marsexploration.data.config.*;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
 
 import java.util.List;
 import java.util.Set;
