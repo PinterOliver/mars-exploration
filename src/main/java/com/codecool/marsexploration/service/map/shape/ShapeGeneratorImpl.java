@@ -13,6 +13,8 @@ public abstract class ShapeGeneratorImpl implements ShapeGenerator {
   private final double plusPerNeighbour;
   private final Random random;
   private final CellType cellType;
+  private static final int QUANTITY_MULTIPLY = 3;
+  private static final int SHAPE_SIDE_DIVIDE = 4;
   
   public ShapeGeneratorImpl(double defaultChance, double plusPerNeighbour, Random random, CellType cellType) {
     this.defaultChance = defaultChance;
@@ -23,10 +25,11 @@ public abstract class ShapeGeneratorImpl implements ShapeGenerator {
   
   @Override
   public Area generate(int quantity) {
-    double a = Math.sqrt(quantity * 3);
-    double plusMinus = random.nextDouble(-a / 4, a / 4);
-    int width = (int) (a + plusMinus);
-    int height = (int) (a - plusMinus);
+    double averageShapeSide = Math.sqrt(quantity * QUANTITY_MULTIPLY); // side?
+    double plusMinus = random.nextDouble(-averageShapeSide / SHAPE_SIDE_DIVIDE, averageShapeSide / SHAPE_SIDE_DIVIDE);
+    int width = (int) (averageShapeSide + plusMinus);
+    int height = (int) (averageShapeSide - plusMinus);
+    
     Area generatedArea = new Area(height, width);
     
     placeCells(generatedArea, quantity);
@@ -40,13 +43,10 @@ public abstract class ShapeGeneratorImpl implements ShapeGenerator {
     
     while (quantity > generatedCount) {
       Coordinate randomCoordinate = new Coordinate(random.nextInt(height), random.nextInt(width));
-      System.out.println("random coordinate: " + randomCoordinate);
-      System.out.println("width: " + width);
-      System.out.println("height: " + height);
       if (area.getCell(randomCoordinate).getType() == CellType.EMPTY) {
         List<Cell> neighbours = area.getNeighbours(randomCoordinate, 1);
-        boolean generate = generateChance(neighbours);
-        if (generate) {
+        boolean generatedChanceResult = generateChanceResult(neighbours);
+        if (generatedChanceResult) {
           area.setCell(randomCoordinate, cellType);
           generatedCount++;
         }
@@ -54,9 +54,9 @@ public abstract class ShapeGeneratorImpl implements ShapeGenerator {
     }
   }
   
-  private boolean generateChance(List<Cell> neighbours) {
-    int neighbourWithSameType = (int) neighbours.stream().filter(e -> e.getType() == cellType).count();
-    double chanceIncrease = neighbourWithSameType * plusPerNeighbour;
+  private boolean generateChanceResult(List<Cell> neighbours) {
+    int neighbourCountWithSameType = (int) neighbours.stream().filter(e -> e.getType() == cellType).count();
+    double chanceIncrease = neighbourCountWithSameType * plusPerNeighbour;
     double randomFromZeroToOne = random.nextDouble();
     return (chanceIncrease + defaultChance) > randomFromZeroToOne;
   }
