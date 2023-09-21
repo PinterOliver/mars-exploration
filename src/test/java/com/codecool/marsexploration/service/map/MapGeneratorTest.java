@@ -7,15 +7,13 @@ import com.codecool.marsexploration.data.config.ResourceConfiguration;
 import com.codecool.marsexploration.data.map.MarsMap;
 import com.codecool.marsexploration.service.map.shape.MountainShapeGenerator;
 import com.codecool.marsexploration.service.map.shape.PitShapeGenerator;
+import com.codecool.marsexploration.service.map.shape.ShapeGenerator;
 import com.codecool.marsexploration.service.map.shape.ShapeProvider;
 import com.codecool.marsexploration.service.utilities.Pick;
 import com.codecool.marsexploration.service.utilities.PickImpl;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -30,7 +28,7 @@ class MapGeneratorTest {
   
   @Test
   public void generateTestWithEnoughPlaceForWater() {
-    MapProvider provider = new MapGenerator(shapeGenerators, random, pick);
+    MapProvider provider = new MapGenerator(random, pick);
     int waterElementCount = 10;
     int pitElementCount = 40;
     int pitRangeCount = 6;
@@ -39,7 +37,10 @@ class MapGeneratorTest {
     ClusterConfiguration pitConfiguration =
             new ClusterConfiguration(CellType.PIT, pitElementCount, pitRangeCount, Set.of(waterConfiguration));
     MapConfiguration configuration = new MapConfiguration(mapSize, List.of(pitConfiguration));
-    MarsMap map = provider.generate(configuration);
+    
+    Map<CellType, ShapeGenerator> shapeGenerators = Map.of(CellType.PIT, new PitShapeGenerator(random, CellType.PIT));
+    
+    MarsMap map = provider.generate(configuration, shapeGenerators);
     
     System.out.println(map);
     assertTrue(checkElementCount("~", waterElementCount, map));
@@ -49,7 +50,7 @@ class MapGeneratorTest {
   
   @Test
   public void generateTestWithoutEnoughPlaceForWater() {
-    MapProvider provider = new MapGenerator(shapeGenerators, random, pick);
+    MapProvider provider = new MapGenerator(random, pick);
     int waterElementCount = 60;
     int pitElementCount = 60;
     int pitRangeCount = 1;
@@ -58,7 +59,8 @@ class MapGeneratorTest {
     ClusterConfiguration pitConfiguration =
             new ClusterConfiguration(CellType.PIT, pitElementCount, pitRangeCount, Set.of(waterConfiguration));
     MapConfiguration configuration = new MapConfiguration(mapSize, List.of(pitConfiguration));
-    MarsMap map = provider.generate(configuration);
+    Map<CellType, ShapeGenerator> shapeGenerators = Map.of(CellType.PIT, new PitShapeGenerator(random, CellType.PIT));
+    MarsMap map = provider.generate(configuration, shapeGenerators);
     
     System.out.println(map);
     assertTrue(checkElementCount("~", waterElementCount, map));

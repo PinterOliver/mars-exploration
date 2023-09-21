@@ -23,6 +23,8 @@ public class Tiles {
     tileMap.put("mineral", new Tile(23, 4));
     tileMap.put("gold", new Tile(16, 22));
     tileMap.put("forest", new Tile(1, 1));
+    tileMap.put("grass", new Tile(7, 0));
+    tileMap.put("house", new Tile(4, 20));
   }
   
   public static void drawTile(GraphicsContext context, Drawable d, int x, int y) {

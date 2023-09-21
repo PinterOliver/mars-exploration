@@ -11,10 +11,7 @@ import com.codecool.marsexploration.service.map.MapGenerator;
 import com.codecool.marsexploration.service.map.MapManager;
 import com.codecool.marsexploration.service.map.MapManagerImpl;
 import com.codecool.marsexploration.service.map.MapProvider;
-import com.codecool.marsexploration.service.map.shape.LakeShapeGenerator;
-import com.codecool.marsexploration.service.map.shape.MountainShapeGenerator;
-import com.codecool.marsexploration.service.map.shape.PitShapeGenerator;
-import com.codecool.marsexploration.service.map.shape.ShapeProvider;
+import com.codecool.marsexploration.service.map.shape.*;
 import com.codecool.marsexploration.service.utilities.Pick;
 import com.codecool.marsexploration.service.utilities.PickImpl;
 import com.codecool.marsexploration.service.validation.MapConfigurationValidator;
@@ -60,7 +57,8 @@ public class Application {
     ConfigurationJsonParser jsonParser = getJsonParser();
     MapConfigurationValidator validator = new MapConfigurationValidatorImpl();
     MapManager mapManager = getManager(random, logger);
-    return new MarsMapUi(logger, input, mapManager, validator, jsonParser, filePathFormat, configurationProviders);
+    ShapeGeneratorFactory shapeGeneratorFactory = new ShapeGeneratorFactory(random);
+    return new MarsMapUi(logger, input, mapManager, validator, jsonParser, filePathFormat, configurationProviders, shapeGeneratorFactory);
   }
   
   @NotNull
@@ -96,7 +94,7 @@ public class Application {
                                                           new PitShapeGenerator(random, CellType.PIT),
                                                           CellType.WATER,
                                                           new LakeShapeGenerator(random, CellType.WATER));
-    MapProvider mapProvider = new MapGenerator(shapeGenerators, random, pick);
+    MapProvider mapProvider = new MapGenerator(random, pick);
     return new MapManagerImpl(mapProvider, fileWriter);
   }
 }

@@ -9,6 +9,7 @@ import com.codecool.marsexploration.data.map.Area;
 import com.codecool.marsexploration.data.map.MarsMap;
 import com.codecool.marsexploration.data.map.ShapeBlueprint;
 import com.codecool.marsexploration.data.utilities.Coordinate;
+import com.codecool.marsexploration.service.map.shape.ShapeGenerator;
 import com.codecool.marsexploration.service.map.shape.ShapeProvider;
 import com.codecool.marsexploration.service.utilities.Pick;
 import org.jetbrains.annotations.NotNull;
@@ -19,21 +20,21 @@ import java.util.stream.Collectors;
 public class MapGenerator implements MapProvider {
   private final Random random;
   private final Pick pick;
-  private final Map<CellType, ShapeProvider> shapeGenerators;
+  // private final Map<CellType, ShapeProvider> shapeGenerators;
   private MarsMap map;
   private int restarts = 0;
   
-  public MapGenerator(Map<CellType, ShapeProvider> shapeGenerators, Random random, Pick pick) {
-    this.shapeGenerators = new HashMap<>(shapeGenerators);
+  public MapGenerator(Random random, Pick pick) {
+    // this.shapeGenerators = new HashMap<>(shapeGenerators);
     this.random = random;
     this.pick = pick;
   }
   
   @Override
-  public MarsMap generate(MapConfiguration configuration) {
+  public MarsMap generate(MapConfiguration configuration, Map<CellType, ShapeGenerator> shapeGenerators) {
     createEmptyMap(configuration.size());
     
-    generateShapes(configuration);
+    generateShapes(configuration, shapeGenerators);
     placeResources(configuration);
     placeAlien();
     
@@ -47,14 +48,14 @@ public class MapGenerator implements MapProvider {
     randomCoordinate.ifPresent(coordinate -> map.setCell(coordinate, CellType.ALIEN));
   }
   
-  private void generateShapes(MapConfiguration configuration) {
+  private void generateShapes(MapConfiguration configuration, Map<CellType, ShapeGenerator> shapeGenerators) {
     List<ShapeBlueprint> shapeBlueprints = generateShapeConfigurations(configuration.clusters()).stream()
                                                                                                 .sorted(Comparator.comparingInt(
                                                                                                                           ShapeBlueprint::size)
                                                                                                                   .reversed())
                                                                                                 .collect(Collectors.toList());
     
-    createShapes(shapeBlueprints, configuration.size());
+    createShapes(shapeBlueprints, configuration.size(), shapeGenerators);
   }
   
   private List<ShapeBlueprint> generateShapeConfigurations(Collection<ClusterConfiguration> configuration) {
@@ -68,7 +69,8 @@ public class MapGenerator implements MapProvider {
     return shapeBlueprintList;
   }
   
-  private void createShapes(List<ShapeBlueprint> shapeBlueprintList, int size) {
+  private void createShapes(List<ShapeBlueprint> shapeBlueprintList, int size,
+          Map<CellType, ShapeGenerator> shapeGenerators) {
     int attemptLimit = 100;
     
     shapeGenerationLoop:
@@ -86,7 +88,7 @@ public class MapGenerator implements MapProvider {
         
         if (++attemptsWithCurrentShapeSize > attemptLimit) {
           if (restarts < attemptLimit) {
-            restartGeneration(shapeBlueprintList, size);
+            restartGeneration(shapeBlueprintList, size, shapeGenerators);
           } else {
             createEmptyMap(size);
           }
@@ -96,10 +98,10 @@ public class MapGenerator implements MapProvider {
     }
   }
   
-  private void restartGeneration(List<ShapeBlueprint> shapes, int size) {
+  private void restartGeneration(List<ShapeBlueprint> shapes, int size, Map<CellType, ShapeGenerator> shapeGenerators) {
     restarts++;
     map = new MarsMap(size);
-    createShapes(shapes, size);
+    createShapes(shapes, size, shapeGenerators);
   }
   
   private boolean manageShapePlacement(Area generatedShape, CellType type) {
