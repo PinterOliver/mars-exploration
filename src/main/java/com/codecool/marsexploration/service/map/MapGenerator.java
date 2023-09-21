@@ -9,7 +9,6 @@ import com.codecool.marsexploration.data.map.Area;
 import com.codecool.marsexploration.data.map.MarsMap;
 import com.codecool.marsexploration.data.map.ShapeBlueprint;
 import com.codecool.marsexploration.data.utilities.Coordinate;
-import com.codecool.marsexploration.service.logger.Logger;
 import com.codecool.marsexploration.service.map.shape.ShapeProvider;
 import com.codecool.marsexploration.service.utilities.Pick;
 import org.jetbrains.annotations.NotNull;
@@ -20,29 +19,24 @@ import java.util.stream.Collectors;
 public class MapGenerator implements MapProvider {
   private final Random random;
   private final Pick pick;
-  private final Logger log;
   private final Map<CellType, ShapeProvider> shapeGenerators;
   private MarsMap map;
   private int restarts = 0;
   
-  public MapGenerator(Map<CellType, ShapeProvider> shapeGenerators, Random random, Pick pick, Logger log) {
+  public MapGenerator(Map<CellType, ShapeProvider> shapeGenerators, Random random, Pick pick) {
     this.shapeGenerators = new HashMap<>(shapeGenerators);
     this.random = random;
     this.pick = pick;
-    this.log = log;
   }
   
   @Override
   public MarsMap generate(MapConfiguration configuration) {
-    
     createEmptyMap(configuration.size());
     
     generateShapes(configuration);
     placeResources(configuration);
     placeAlien();
     
-    // log.logInfo(map.toString());
-    // log.logInfo("restarts: " + restarts);
     return map;
   }
   
@@ -59,8 +53,6 @@ public class MapGenerator implements MapProvider {
                                                                                                                           ShapeBlueprint::size)
                                                                                                                   .reversed())
                                                                                                 .collect(Collectors.toList());
-    
-    // shapeBlueprints.forEach(System.out::println);
     
     createShapes(shapeBlueprints, configuration.size());
   }
@@ -122,6 +114,7 @@ public class MapGenerator implements MapProvider {
       }
       possibleStartPoints.remove(startPointIndex);
     }
+    
     return false;
   }
   
@@ -160,6 +153,7 @@ public class MapGenerator implements MapProvider {
         possibleStartPoints.add(new Coordinate(row, column));
       }
     }
+    
     return possibleStartPoints;
   }
   
@@ -174,7 +168,8 @@ public class MapGenerator implements MapProvider {
     for (int i = 1; i < numberOfShapes; i++) {
       int numberOfShapesToGenerate = numberOfShapes - indexOffset - i;
       int maximumShapeSize = remainingTilesToAssign - (numberOfShapesToGenerate * minimumShapeSize);
-      int generatedSize = random.nextInt(minimumShapeSize, maximumShapeSize);
+      int generatedSize =
+              (int) Math.pow(random.nextDouble(Math.sqrt(minimumShapeSize), Math.sqrt(maximumShapeSize)), 2);
       int shapeSize = Math.min(generatedSize, maximumShapeSize - generatedSize);
       
       shapeBlueprints.add(new ShapeBlueprint(type, shapeSize));
@@ -191,7 +186,6 @@ public class MapGenerator implements MapProvider {
   
   private void placeResources(@NotNull MapConfiguration mapConfiguration) {
     for (ClusterConfiguration configuration : mapConfiguration.clusters()) {
-      
       int numberOfResources =
               configuration.resourceTypes().stream().mapToInt(ResourceConfiguration::numberOfElements).sum();
       CellType requiredNeighbor = configuration.clusterType();

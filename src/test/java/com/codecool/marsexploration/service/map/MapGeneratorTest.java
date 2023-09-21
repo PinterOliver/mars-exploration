@@ -5,8 +5,6 @@ import com.codecool.marsexploration.data.config.ClusterConfiguration;
 import com.codecool.marsexploration.data.config.MapConfiguration;
 import com.codecool.marsexploration.data.config.ResourceConfiguration;
 import com.codecool.marsexploration.data.map.MarsMap;
-import com.codecool.marsexploration.service.logger.ConsoleLogger;
-import com.codecool.marsexploration.service.logger.Logger;
 import com.codecool.marsexploration.service.map.shape.MountainShapeGenerator;
 import com.codecool.marsexploration.service.map.shape.PitShapeGenerator;
 import com.codecool.marsexploration.service.map.shape.ShapeProvider;
@@ -22,15 +20,17 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MapGeneratorTest {
-  Random random = new Random();
-  Logger logger = new ConsoleLogger();
-  Pick pick = new PickImpl(random);
-  Map<CellType, ShapeProvider> shapeGenerators =
-          Map.of(CellType.MOUNTAIN, new MountainShapeGenerator(random), CellType.PIT, new PitShapeGenerator(random));
+  private final Random random = new Random();
+  private final Pick pick = new PickImpl(random);
+  private final Map<CellType, ShapeProvider> shapeGenerators = Map.of(CellType.MOUNTAIN,
+                                                                      new MountainShapeGenerator(random,
+                                                                                                 CellType.MOUNTAIN),
+                                                                      CellType.PIT,
+                                                                      new PitShapeGenerator(random, CellType.PIT));
   
   @Test
-  void generateTestWithEnoughPlaceForWater() {
-    MapProvider provider = new MapGenerator(shapeGenerators, random, pick, logger);
+  public void generateTestWithEnoughPlaceForWater() {
+    MapProvider provider = new MapGenerator(shapeGenerators, random, pick);
     int waterElementCount = 10;
     int pitElementCount = 40;
     int pitRangeCount = 6;
@@ -48,8 +48,8 @@ class MapGeneratorTest {
   }
   
   @Test
-  void generateTestWithoutEnoughPlaceForWater() {
-    MapProvider provider = new MapGenerator(shapeGenerators, random, pick, logger);
+  public void generateTestWithoutEnoughPlaceForWater() {
+    MapProvider provider = new MapGenerator(shapeGenerators, random, pick);
     int waterElementCount = 60;
     int pitElementCount = 60;
     int pitRangeCount = 1;

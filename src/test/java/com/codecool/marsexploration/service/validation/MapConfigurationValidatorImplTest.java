@@ -12,9 +12,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MapConfigurationValidatorImplTest {
-  Cluster mountainResources = new Cluster(CellType.MOUNTAIN, Set.of(CellType.MINERAL));
-  Cluster pitResources = new Cluster(CellType.PIT, Set.of(CellType.WATER));
-  MapConfigurationValidator validator = new MapConfigurationValidatorImpl();
+  private final Cluster mountainResources = new Cluster(CellType.MOUNTAIN, Set.of(CellType.MINERAL));
+  private final Cluster pitResources = new Cluster(CellType.PIT, Set.of(CellType.WATER));
+  private final MapConfigurationValidator validator = new MapConfigurationValidatorImpl();
   
   @NotNull
   private static MapConfiguration getConfiguration(int size, int numberOfMountain, int mountainRanges, int numberOfPit,
@@ -32,7 +32,7 @@ class MapConfigurationValidatorImplTest {
   }
   
   @Test
-  void isValidTestWithFewSize() {
+  public void isValidTestWithFewSize() {
     MapValidationConfiguration validationConfiguration =
             new MapValidationConfiguration(0.8, 10, 30, 0.05, 0.01, List.of(mountainResources, pitResources));
     MapConfiguration mapConfiguration = getConfiguration(9, 10, 2, 10, 2, 5, 5);
@@ -43,7 +43,7 @@ class MapConfigurationValidatorImplTest {
   }
   
   @Test
-  void isValidTestWithTooManySize() {
+  public void isValidTestWithTooManySize() {
     MapConfiguration mapConfiguration = getConfiguration(31, 80, 3, 80, 3, 10, 10);
     MapValidationConfiguration validationConfiguration =
             new MapValidationConfiguration(0.8, 10, 30, 0.05, 0.01, List.of(mountainResources, pitResources));
@@ -54,7 +54,7 @@ class MapConfigurationValidatorImplTest {
   }
   
   @Test
-  void isValidTestWithLimitValue() {
+  public void isValidTestWithLimitValue() {
     MapConfiguration mapConfiguration = getConfiguration(10, 23, 1, 5, 1, 1, 1);
     MapValidationConfiguration validationConfiguration =
             new MapValidationConfiguration(0.3, 10, 30, 0.05, 0.01, List.of(mountainResources, pitResources));
@@ -65,7 +65,7 @@ class MapConfigurationValidatorImplTest {
   }
   
   @Test
-  void isValidTestWithOverTheLimit() {
+  public void isValidTestWithOverTheLimit() {
     MapConfiguration mapConfiguration = getConfiguration(10, 23, 1, 5, 1, 1, 1);
     MapValidationConfiguration validationConfiguration =
             new MapValidationConfiguration(0.29, 10, 30, 0.05, 0.01, List.of(mountainResources, pitResources));
@@ -76,12 +76,11 @@ class MapConfigurationValidatorImplTest {
   }
   
   @Test
-  void isValidTestWithNullConfiguration() {
-    MapConfiguration mapConfiguration = null;
+  public void isValidTestWithNullConfiguration() {
     MapValidationConfiguration validationConfiguration =
             new MapValidationConfiguration(0.29, 10, 30, 0.05, 0.01, List.of(mountainResources, pitResources));
     
-    boolean validatorResponse = validator.isValid(mapConfiguration, validationConfiguration);
+    boolean validatorResponse = validator.isValid(null, validationConfiguration);
     
     assertFalse(validatorResponse);
   }

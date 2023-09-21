@@ -1,17 +1,14 @@
 package com.codecool.marsexploration.data.cell;
 
-import com.codecool.marsexploration.data.map.Area;
 import com.codecool.marsexploration.data.utilities.Coordinate;
 
 public class Cell {
   private final Coordinate position;
-  private final Area area;
   private CellType type;
   
-  public Cell(Coordinate position, CellType type, Area area) {
+  public Cell(Coordinate position, CellType type) {
     this.position = position;
     this.type = getNotNullType(type);
-    this.area = area;
   }
   
   @Override

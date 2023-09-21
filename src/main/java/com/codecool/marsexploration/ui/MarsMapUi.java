@@ -4,6 +4,7 @@ import com.codecool.marsexploration.Application;
 import com.codecool.marsexploration.data.config.MapConfiguration;
 import com.codecool.marsexploration.data.config.MapValidationConfiguration;
 import com.codecool.marsexploration.service.config.MapConfigurationProvider;
+import com.codecool.marsexploration.service.input.ConfigurationJsonParser;
 import com.codecool.marsexploration.service.input.Input;
 import com.codecool.marsexploration.service.logger.Logger;
 import com.codecool.marsexploration.service.map.MapManager;
@@ -24,13 +25,13 @@ public class MarsMapUi {
   private final List<MapConfigurationProvider> mapConfigurationProviders;
   
   public MarsMapUi(Logger logger, Input input, MapManager mapManager, MapConfigurationValidator validator,
-          MapValidationConfiguration validationConfiguration, String filePathFormat,
+          ConfigurationJsonParser jsonParser, String filePathFormat,
           List<MapConfigurationProvider> mapConfigurationProviders) {
     this.logger = logger;
     this.input = input;
     this.manager = mapManager;
     this.validator = validator;
-    this.validationConfiguration = validationConfiguration;
+    this.validationConfiguration = jsonParser.get();
     this.filePathFormat = filePathFormat;
     this.mapConfigurationProviders = mapConfigurationProviders;
   }

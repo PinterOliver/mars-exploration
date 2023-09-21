@@ -10,7 +10,6 @@ public class MapConfigurationGenerator implements MapConfigurationProvider {
   private static final String NAME = "Automatic Map Configurator - Random";
   private final Random random;
   private final TilesManager tiles;
-  private MapValidationConfiguration validationConfiguration;
   
   public MapConfigurationGenerator(TilesManager tiles, Random RANDOM) {
     this.tiles = tiles;

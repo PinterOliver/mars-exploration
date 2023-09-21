@@ -36,9 +36,11 @@ public abstract class ShapeGenerator implements ShapeProvider {
   }
   
   private void placeCells(Area area, int quantity) {
-    int generatedCount = 0;
     int width = area.getWidth();
     int height = area.getHeight();
+    
+    area.setCell(new Coordinate(height / 2, width / 2), cellType);
+    int generatedCount = 1;
     
     while (quantity > generatedCount) {
       Coordinate randomCoordinate = new Coordinate(random.nextInt(height), random.nextInt(width));
