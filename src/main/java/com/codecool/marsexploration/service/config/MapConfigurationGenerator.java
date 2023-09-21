@@ -10,7 +10,6 @@ public class MapConfigurationGenerator implements MapConfigurationProvider {
   private static final String NAME = "Automatic Map Configurator - Random";
   private final Random random;
   private final TilesManager tiles;
-  private MapValidationConfiguration validationConfiguration;
   
   public MapConfigurationGenerator(TilesManager tiles, Random random) {
     this.tiles = tiles;
@@ -18,13 +17,13 @@ public class MapConfigurationGenerator implements MapConfigurationProvider {
   }
   
   @Override
-  public MapConfiguration getMapConfiguration(MapValidationConfiguration validationConfiguration) {
-    this.validationConfiguration = validationConfiguration;
+  public MapConfiguration getMapConfiguration(@NotNull MapValidationConfiguration validationConfiguration) {
     int mapSize = random.nextInt(validationConfiguration.minimumMapSize(), validationConfiguration.maximumMapSize());
     
     tiles.startManagingTiles(mapSize, validationConfiguration);
     
-    Collection<RangeWithNumbersConfiguration> rangeConfigurations = generateRangeConfigurations();
+    Collection<RangeWithNumbersConfiguration> rangeConfigurations =
+            generateRangeConfigurations(validationConfiguration);
     
     tiles.finishManagingTiles();
     return new MapConfiguration(mapSize, rangeConfigurations);
@@ -36,7 +35,8 @@ public class MapConfigurationGenerator implements MapConfigurationProvider {
   }
   
   @NotNull
-  private Collection<RangeWithNumbersConfiguration> generateRangeConfigurations() {
+  private Collection<RangeWithNumbersConfiguration> generateRangeConfigurations(
+          @NotNull MapValidationConfiguration validationConfiguration) {
     Collection<RangeWithNumbersConfiguration> rangeConfigurations = new ArrayList<>();
     
     for (RangeWithResource rangeWithResources : validationConfiguration.rangeTypesWithResources()) {
