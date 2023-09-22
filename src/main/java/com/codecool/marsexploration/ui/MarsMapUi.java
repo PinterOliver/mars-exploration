@@ -10,14 +10,17 @@ import com.codecool.marsexploration.service.input.ConfigurationJsonParser;
 import com.codecool.marsexploration.service.input.Input;
 import com.codecool.marsexploration.service.logger.Logger;
 import com.codecool.marsexploration.service.map.MapManager;
-import com.codecool.marsexploration.service.map.shape.ShapeGenerator;
 import com.codecool.marsexploration.service.map.shape.ShapeGeneratorProvider;
+import com.codecool.marsexploration.service.map.shape.ShapeProvider;
 import com.codecool.marsexploration.service.validation.MapConfigurationValidator;
 import com.codecool.marsexploration.visuals.Main;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class MarsMapUi {
   private final Logger logger;
@@ -27,11 +30,11 @@ public class MarsMapUi {
   private final MapValidationConfiguration validationConfiguration;
   private final String filePathFormat;
   private final List<MapConfigurationProvider> mapConfigurationProviders;
-  private final ShapeGeneratorProvider shapeGeneratorFactory;
+  private final ShapeGeneratorProvider shapeGeneratorProvider;
   
   public MarsMapUi(Logger logger, Input input, MapManager mapManager, MapConfigurationValidator validator,
           ConfigurationJsonParser jsonParser, String filePathFormat,
-          List<MapConfigurationProvider> mapConfigurationProviders, ShapeGeneratorProvider shapeGeneratorFactory) {
+          List<MapConfigurationProvider> mapConfigurationProviders, ShapeGeneratorProvider shapeGeneratorProvider) {
     this.logger = logger;
     this.input = input;
     this.manager = mapManager;
@@ -39,7 +42,7 @@ public class MarsMapUi {
     this.validationConfiguration = jsonParser.get();
     this.filePathFormat = filePathFormat;
     this.mapConfigurationProviders = mapConfigurationProviders;
-    this.shapeGeneratorFactory = shapeGeneratorFactory;
+    this.shapeGeneratorProvider = shapeGeneratorProvider;
   }
   
   public void run() {
@@ -56,7 +59,7 @@ public class MarsMapUi {
   private void runMapGeneration() {
     if (checkWhetherValidationConfigurationIsValid()) {
       MapConfiguration configuration = getMapConfiguration();
-      Map<CellType, ShapeGenerator> shapeGenerators = getShapeGenerators(configuration.clusters());
+      Map<CellType, ShapeProvider> shapeGenerators = getShapeGenerators(configuration.clusters());
       String filePath = getFilePath();
       Application.setFilePath(filePath);
       manager.createMap(configuration, filePath, shapeGenerators);
@@ -65,10 +68,10 @@ public class MarsMapUi {
     }
   }
   
-  private Map<CellType, ShapeGenerator> getShapeGenerators(Collection<ClusterConfiguration> clusters) {
-    Map<CellType, ShapeGenerator> shapeGenerators = new HashMap<>();
+  private Map<CellType, ShapeProvider> getShapeGenerators(Collection<ClusterConfiguration> clusters) {
+    Map<CellType, ShapeProvider> shapeGenerators = new HashMap<>();
     for (ClusterConfiguration cluster : clusters) {
-      ShapeGenerator shapeGenerator = shapeGeneratorFactory.getShapeGenerator(cluster.clusterType());
+      ShapeProvider shapeGenerator = shapeGeneratorProvider.getShapeGenerator(cluster.clusterType());
       shapeGenerators.put(cluster.clusterType(), shapeGenerator);
     }
     return shapeGenerators;

@@ -31,7 +31,7 @@ public class MapGenerator implements MapProvider {
   }
   
   @Override
-  public MarsMap generate(MapConfiguration configuration, Map<CellType, ShapeGenerator> shapeGenerators) {
+  public MarsMap generate(MapConfiguration configuration, Map<CellType, ShapeProvider> shapeGenerators) {
     createEmptyMap(configuration.size());
     
     generateShapes(configuration, shapeGenerators);
@@ -48,7 +48,7 @@ public class MapGenerator implements MapProvider {
     randomCoordinate.ifPresent(coordinate -> map.setCell(coordinate, CellType.ALIEN));
   }
   
-  private void generateShapes(MapConfiguration configuration, Map<CellType, ShapeGenerator> shapeGenerators) {
+  private void generateShapes(MapConfiguration configuration, Map<CellType, ShapeProvider> shapeGenerators) {
     List<ShapeBlueprint> shapeBlueprints = generateShapeConfigurations(configuration.clusters()).stream()
                                                                                                 .sorted(Comparator.comparingInt(
                                                                                                                           ShapeBlueprint::size)
@@ -70,13 +70,13 @@ public class MapGenerator implements MapProvider {
   }
   
   private void createShapes(List<ShapeBlueprint> shapeBlueprintList, int size,
-          Map<CellType, ShapeGenerator> shapeGenerators) {
+          Map<CellType, ShapeProvider> shapeProviders) {
     int attemptLimit = 100;
     
     shapeGenerationLoop:
     for (ShapeBlueprint shapeBlueprint : shapeBlueprintList) {
       int attemptsWithCurrentShapeSize = 0;
-      ShapeProvider generator = shapeGenerators.get(shapeBlueprint.type());
+      ShapeProvider generator = shapeProviders.get(shapeBlueprint.type());
       boolean isPlaced = false;
       while (!isPlaced) {
         Area generatedShape = generator.get(shapeBlueprint.size());
@@ -88,7 +88,7 @@ public class MapGenerator implements MapProvider {
         
         if (++attemptsWithCurrentShapeSize > attemptLimit) {
           if (restarts < attemptLimit) {
-            restartGeneration(shapeBlueprintList, size, shapeGenerators);
+            restartGeneration(shapeBlueprintList, size, shapeProviders);
           } else {
             createEmptyMap(size);
           }
@@ -98,7 +98,7 @@ public class MapGenerator implements MapProvider {
     }
   }
   
-  private void restartGeneration(List<ShapeBlueprint> shapes, int size, Map<CellType, ShapeGenerator> shapeGenerators) {
+  private void restartGeneration(List<ShapeBlueprint> shapes, int size, Map<CellType, ShapeProvider> shapeGenerators) {
     restarts++;
     map = new MarsMap(size);
     createShapes(shapes, size, shapeGenerators);
