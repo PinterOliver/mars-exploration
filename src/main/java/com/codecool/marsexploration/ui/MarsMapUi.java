@@ -17,10 +17,7 @@ import com.codecool.marsexploration.visuals.Main;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class MarsMapUi {
   private final Logger logger;
@@ -41,7 +38,7 @@ public class MarsMapUi {
     this.validator = validator;
     this.validationConfiguration = jsonParser.get();
     this.filePathFormat = filePathFormat;
-    this.mapConfigurationProviders = mapConfigurationProviders;
+    this.mapConfigurationProviders = new ArrayList<>(mapConfigurationProviders);
     this.shapeGeneratorProvider = shapeGeneratorProvider;
   }
   

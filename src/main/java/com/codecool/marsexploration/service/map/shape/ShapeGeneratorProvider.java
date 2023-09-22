@@ -3,6 +3,7 @@ package com.codecool.marsexploration.service.map.shape;
 import com.codecool.marsexploration.data.cell.CellType;
 import com.codecool.marsexploration.data.map.ShapeGeneratorBlueprint;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
@@ -13,7 +14,7 @@ public class ShapeGeneratorProvider {
   Map<CellType, ShapeGeneratorBlueprint> blueprints;
   public ShapeGeneratorProvider(Random random, Map<CellType, ShapeGeneratorBlueprint> blueprints) {
     this.RANDOM = random;
-    this.blueprints = blueprints;
+    this.blueprints = new HashMap<>(blueprints);
   }
   public ShapeGenerator getShapeGenerator(CellType type, double defaultChance){
     return new GeneralShapeGenerator(defaultChance, RANDOM, type);
