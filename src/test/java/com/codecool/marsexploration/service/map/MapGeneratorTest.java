@@ -7,13 +7,15 @@ import com.codecool.marsexploration.data.config.ResourceConfiguration;
 import com.codecool.marsexploration.data.map.MarsMap;
 import com.codecool.marsexploration.service.map.shape.MountainShapeGenerator;
 import com.codecool.marsexploration.service.map.shape.PitShapeGenerator;
-import com.codecool.marsexploration.service.map.shape.ShapeGenerator;
 import com.codecool.marsexploration.service.map.shape.ShapeProvider;
 import com.codecool.marsexploration.service.utilities.Pick;
 import com.codecool.marsexploration.service.utilities.PickImpl;
 import org.junit.jupiter.api.Test;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 

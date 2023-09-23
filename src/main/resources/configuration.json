@@ -8,20 +8,15 @@
     {
       "clusterType": "MOUNTAIN",
       "resourceTypes": [
-        "MINERAL"
+        "MINERAL",
+        "GOLD"
       ]
     },
     {
-      "clusterType": "GRASS",
+      "clusterType": "WATER",
       "resourceTypes": [
         "FOREST",
         "HOUSE"
-      ]
-    },
-    {
-      "clusterType": "PIT",
-      "resourceTypes": [
-        "WATER"
       ]
     }
   ]

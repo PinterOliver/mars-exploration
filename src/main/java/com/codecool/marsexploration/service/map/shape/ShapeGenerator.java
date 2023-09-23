@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Random;
 
 public abstract class ShapeGenerator implements ShapeProvider {
+  public static final int NUMBER_OF_NEIGHBORS = 8;
   private static final int QUANTITY_MULTIPLY = 3;
   private static final int SHAPE_SIDE_DIVIDE = 4;
   private final double defaultChance;
@@ -16,9 +17,9 @@ public abstract class ShapeGenerator implements ShapeProvider {
   private final Random random;
   private final CellType cellType;
   
-  public ShapeGenerator(double defaultChance, double plusPerNeighbour, Random random, CellType cellType) {
-    this.defaultChance = defaultChance;
-    this.plusPerNeighbour = plusPerNeighbour;
+  public ShapeGenerator(double sparsenessFactor, Random random, CellType cellType) {
+    this.defaultChance = sparsenessFactor;
+    this.plusPerNeighbour = (1 - sparsenessFactor) / NUMBER_OF_NEIGHBORS;
     this.random = random;
     this.cellType = cellType;
   }

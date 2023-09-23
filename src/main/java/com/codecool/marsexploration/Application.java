@@ -12,7 +12,7 @@ import com.codecool.marsexploration.service.map.MapGenerator;
 import com.codecool.marsexploration.service.map.MapManager;
 import com.codecool.marsexploration.service.map.MapManagerImpl;
 import com.codecool.marsexploration.service.map.MapProvider;
-import com.codecool.marsexploration.service.map.shape.*;
+import com.codecool.marsexploration.service.map.shape.ShapeGeneratorProvider;
 import com.codecool.marsexploration.service.utilities.Pick;
 import com.codecool.marsexploration.service.utilities.PickImpl;
 import com.codecool.marsexploration.service.validation.MapConfigurationValidator;
@@ -23,7 +23,10 @@ import org.jetbrains.annotations.Unmodifiable;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Scanner;
 
 public class Application {
   private static String FILE_PATH = "src/main/resources/maps/exploration.map";
@@ -55,11 +58,27 @@ public class Application {
     ConfigurationJsonParser jsonParser = getJsonParser();
     MapConfigurationValidator validator = new MapConfigurationValidatorImpl();
     MapManager mapManager = getManager(random, logger);
-    ShapeGeneratorProvider shapeGeneratorProvider = new ShapeGeneratorProvider(random, Map.of(
-            CellType.MOUNTAIN, new ShapeGeneratorBlueprint(CellType.MOUNTAIN, 0.08),
-            CellType.PIT, new ShapeGeneratorBlueprint(CellType.PIT,0.12),
-            CellType.WATER, new ShapeGeneratorBlueprint(CellType.WATER,0)));
-    return new MarsMapUi(logger, input, mapManager, validator, jsonParser, filePathFormat, configurationProviders, shapeGeneratorProvider);
+    ShapeGeneratorProvider shapeGeneratorProvider = new ShapeGeneratorProvider(random,
+                                                                               Map.of(CellType.MOUNTAIN,
+                                                                                      new ShapeGeneratorBlueprint(
+                                                                                              CellType.MOUNTAIN,
+                                                                                              0.12),
+                                                                                      CellType.PIT,
+                                                                                      new ShapeGeneratorBlueprint(
+                                                                                              CellType.PIT,
+                                                                                              0.2),
+                                                                                      CellType.WATER,
+                                                                                      new ShapeGeneratorBlueprint(
+                                                                                              CellType.WATER,
+                                                                                              0)));
+    return new MarsMapUi(logger,
+                         input,
+                         mapManager,
+                         validator,
+                         jsonParser,
+                         filePathFormat,
+                         configurationProviders,
+                         shapeGeneratorProvider);
   }
   
   @NotNull
@@ -90,12 +109,6 @@ public class Application {
   private static MapManager getManager(Random random, Logger logger) {
     MapFileWriter fileWriter = new MapFileWriterImpl(logger);
     Pick pick = new PickImpl(random);
-    // Map<CellType, ShapeProvider> shapeGenerators = Map.of(CellType.MOUNTAIN,
-    //                                                       new MountainShapeGenerator(random, CellType.MOUNTAIN),
-    //                                                       CellType.PIT,
-    //                                                       new PitShapeGenerator(random, CellType.PIT),
-    //                                                       CellType.WATER,
-    //                                                       new LakeShapeGenerator(random, CellType.WATER));
     MapProvider mapProvider = new MapGenerator(random, pick);
     return new MapManagerImpl(mapProvider, fileWriter);
   }
