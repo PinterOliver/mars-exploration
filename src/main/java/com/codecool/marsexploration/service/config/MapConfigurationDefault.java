@@ -4,9 +4,12 @@ import com.codecool.marsexploration.data.cell.CellType;
 import com.codecool.marsexploration.data.config.*;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
-public class MapConfigurationDefault implements MapConfigurationProvider{
+public class MapConfigurationDefault implements MapConfigurationProvider {
   private static final String NAME = "Automatic Map Configurator - Default";
   private final TilesManager tiles;
   
