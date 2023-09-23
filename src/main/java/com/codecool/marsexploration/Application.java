@@ -92,6 +92,7 @@ public class Application {
           Random random) {
     TilesManager tilesManager = new TilesCalculator();
     return List.of(new UiMapConfigurationGetter(logger, input, tilesManager),
+                   new MapConfigurationDefault(tilesManager),
                    new MapConfigurationGenerator(tilesManager, random));
   }
   
@@ -108,12 +109,12 @@ public class Application {
   private static MapManager getManager(Random random, Logger logger) {
     MapFileWriter fileWriter = new MapFileWriterImpl(logger);
     Pick pick = new PickImpl(random);
-    Map<CellType, ShapeProvider> shapeGenerators = Map.of(CellType.MOUNTAIN,
-                                                          new MountainShapeGenerator(random, CellType.MOUNTAIN),
-                                                          CellType.PIT,
-                                                          new PitShapeGenerator(random, CellType.PIT),
-                                                          CellType.WATER,
-                                                          new LakeShapeGenerator(random, CellType.WATER));
+    // Map<CellType, ShapeProvider> shapeGenerators = Map.of(CellType.MOUNTAIN,
+    //                                                       new MountainShapeGenerator(random, CellType.MOUNTAIN),
+    //                                                       CellType.PIT,
+    //                                                       new PitShapeGenerator(random, CellType.PIT),
+    //                                                       CellType.WATER,
+    //                                                       new LakeShapeGenerator(random, CellType.WATER));
     MapProvider mapProvider = new MapGenerator(random, pick);
     return new MapManagerImpl(mapProvider, fileWriter);
   }
