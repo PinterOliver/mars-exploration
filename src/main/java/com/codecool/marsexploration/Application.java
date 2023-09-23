@@ -23,7 +23,10 @@ import org.jetbrains.annotations.Unmodifiable;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Scanner;
 
 public class Application {
   private static String FILE_PATH = "src/main/resources/maps/exploration.map";
@@ -55,11 +58,27 @@ public class Application {
     ConfigurationJsonParser jsonParser = getJsonParser();
     MapConfigurationValidator validator = new MapConfigurationValidatorImpl();
     MapManager mapManager = getManager(random, logger);
-    ShapeGeneratorProvider shapeGeneratorProvider = new ShapeGeneratorProvider(random, Map.of(
-            CellType.MOUNTAIN, new ShapeGeneratorBlueprint(CellType.MOUNTAIN, 0.08),
-            CellType.PIT, new ShapeGeneratorBlueprint(CellType.PIT,0.12),
-            CellType.WATER, new ShapeGeneratorBlueprint(CellType.WATER,0)));
-    return new MarsMapUi(logger, input, mapManager, validator, jsonParser, filePathFormat, configurationProviders, shapeGeneratorProvider);
+    ShapeGeneratorProvider shapeGeneratorProvider = new ShapeGeneratorProvider(random,
+                                                                               Map.of(CellType.MOUNTAIN,
+                                                                                      new ShapeGeneratorBlueprint(
+                                                                                              CellType.MOUNTAIN,
+                                                                                              0.08),
+                                                                                      CellType.PIT,
+                                                                                      new ShapeGeneratorBlueprint(
+                                                                                              CellType.PIT,
+                                                                                              0.12),
+                                                                                      CellType.WATER,
+                                                                                      new ShapeGeneratorBlueprint(
+                                                                                              CellType.WATER,
+                                                                                              0)));
+    return new MarsMapUi(logger,
+                         input,
+                         mapManager,
+                         validator,
+                         jsonParser,
+                         filePathFormat,
+                         configurationProviders,
+                         shapeGeneratorProvider);
   }
   
   @NotNull

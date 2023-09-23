@@ -9,7 +9,6 @@ import com.codecool.marsexploration.data.map.Area;
 import com.codecool.marsexploration.data.map.MarsMap;
 import com.codecool.marsexploration.data.map.ShapeBlueprint;
 import com.codecool.marsexploration.data.utilities.Coordinate;
-import com.codecool.marsexploration.service.map.shape.ShapeGenerator;
 import com.codecool.marsexploration.service.map.shape.ShapeProvider;
 import com.codecool.marsexploration.service.utilities.Pick;
 import org.jetbrains.annotations.NotNull;
