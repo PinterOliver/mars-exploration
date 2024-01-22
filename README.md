@@ -38,7 +38,7 @@ git clone https://github.com/PinterOliver/mars-exploration/
 
 ### To configure the Mars map, follow these steps:
 
-1. You can specify where the generated map txt should be saved. You change the path in the Application class by changing the **FILE_PATH** variable.
+1. You can specify where the generated map txt should be saved. You can change the path in the Application class by changing the **FILE_PATH** variable.
 
 2. **Run** the application in the console
 
