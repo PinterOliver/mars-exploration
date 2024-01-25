@@ -50,11 +50,14 @@ The Mars map is created based on a specified configuration, including resources,
 
 3. **Follow the prompts** to provide necessary information, such as the number of resources, mountains, waters, and other settings.
    ![Console Screenshot](src/main/resources/README/console.png)
+<br/>
+   (Note: you can choose preconfigured options)
 
 ## Usage
 
 Once configured, the application will generate a Mars map in a text file format. Explore the generated map through the JavaFX GUI, displayed after the configuration.
 The result should look like this:
+<br/>
 ![Map Example](src/main/resources/README/map_example.png)
 
 ## Contact
